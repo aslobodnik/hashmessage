@@ -12,8 +12,8 @@ const NavBar = () => {
           Submit
         </Link>
         <Link
-          className={pathname === "/records" ? "text-blue-500" : ""}
-          href="/records"
+          className={pathname === "/view" ? "text-blue-500" : ""}
+          href="/view"
         >
           View
         </Link>
