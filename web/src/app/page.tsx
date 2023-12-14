@@ -1,17 +1,33 @@
 "use client";
 import Image from "next/image";
-import { keccak256, toHex } from "viem";
+import { Address, keccak256, toHex } from "viem";
 import { useAccount } from "wagmi";
 import { signTypedData } from "@wagmi/core";
-import { Button, Input, Textarea } from "@ensdomains/thorin";
-import { useState, useEffect } from "react";
+import { Button, Input, Textarea, RecordItem } from "@ensdomains/thorin";
+import { useState, useEffect, ChangeEvent } from "react";
 import NavBar from "./components/NavBar";
 import { useSignMessage } from "wagmi";
-import { recoverMessageAddress } from "viem";
+import { recoverMessageAddress, Hex } from "viem";
 
 export default function Home() {
   const [secretMsg, setSecretMsg] = useState("");
   const [hashedMsg, setHashedMsg] = useState("");
+  const [signature, setSignature] = useState<Hex | undefined>(undefined);
+
+  const [message, setMessage] = useState<string>("");
+
+  const handleSignatureChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.target.value;
+    if (input.startsWith("0x")) {
+      setSignature(input as Hex);
+    } else {
+      alert("Misformed signature");
+    }
+  };
+
+  const handleMessageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setMessage(event.target.value);
+  };
 
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message: secretMsg,
@@ -26,6 +42,22 @@ export default function Home() {
   const handleButtonClick = () => {
     console.log("Button clicked!");
     signMessage();
+  };
+
+  const recoverButtonClick = async () => {
+    console.log("Recover");
+
+    try {
+      const address = await recoverMessageAddress({
+        message: message,
+        signature: signature as Hex,
+      });
+
+      console.log(address);
+      // Do something with the address
+    } catch (error) {
+      console.error("Error in recovering address:", error);
+    }
   };
 
   useEffect(() => {
@@ -61,6 +93,38 @@ export default function Home() {
         <Button onClick={handleButtonClick} width="45">
           Sign
         </Button>
+      </div>
+      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+        <Textarea
+          label="Read only"
+          placeholder="Signed message"
+          readOnly
+          value={data}
+        />
+      </div>
+      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+        <Input
+          label="Message"
+          placeholder="hi"
+          value={message}
+          onChange={handleMessageChange}
+        />
+      </div>
+      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+        <Input
+          label="Signature"
+          placeholder="0xA0Cf…251e"
+          value={signature}
+          onChange={handleSignatureChange}
+        />
+      </div>
+      <div className="pb-4  mx-auto">
+        <Button onClick={recoverButtonClick} width="45">
+          Recover Address
+        </Button>
+      </div>
+      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+        <RecordItem value="user#123">{""}</RecordItem>
       </div>
     </main>
   );
