@@ -16,7 +16,7 @@ export default function Home() {
     </main>
   );
 }
-export function HashRevealTable() {
+function HashRevealTable() {
   const hashRevealRecords = [
     {
       id: 1,
