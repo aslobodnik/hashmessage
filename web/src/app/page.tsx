@@ -31,7 +31,7 @@ export default function Home() {
   };
 
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
-    message: secretMsg,
+    message: hashedMsg,
   });
 
   useEffect(() => {

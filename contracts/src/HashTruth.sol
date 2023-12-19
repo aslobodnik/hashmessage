@@ -1,20 +1,22 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
+import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
 
 contract HashTruth {
+    using ECDSA for bytes32;
     struct Record {
         uint id;
         string message;
         bytes32 msgHash;
         address msgAuthor;
         address msgRevealor;
-        string msgSignature;
+        bytes msgSignature;
     }
 
     Record[] public records;
     uint public nextRecordId;
 
-    function addRecord(string memory _msgSignature, bytes32 _msgHash) public {
+    function addRecord(bytes memory _msgSignature, bytes32 _msgHash) public {
         // Recover the signer from the signature and the message hash
         address recoveredSigner = recoverSigner(_msgHash, _msgSignature);
 
@@ -35,32 +37,38 @@ contract HashTruth {
     }
 
     function recoverSigner(
-        bytes32 _hash,
-        string memory _signature
-    ) internal pure returns (address) {
-        bytes memory signature = bytes(_signature);
-        require(signature.length == 65, "Invalid signature length");
+        bytes32 _ethSignedMessageHash,
+        bytes memory _signature
+    ) public pure returns (address) {
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
 
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
+        return ecrecover(_ethSignedMessageHash, v, r, s);
+    }
 
-        // Split the signature into r, s and v variables
+    function splitSignature(
+        bytes memory sig
+    ) public pure returns (bytes32 r, bytes32 s, uint8 v) {
+        require(sig.length == 65, "invalid signature length");
+
         assembly {
-            r := mload(add(signature, 32))
-            s := mload(add(signature, 64))
-            v := byte(0, mload(add(signature, 96)))
+            /*
+            First 32 bytes stores the length of the signature
+
+            add(sig, 32) = pointer of sig + 32
+            effectively, skips first 32 bytes of signature
+
+            mload(p) loads next 32 bytes starting at the memory address p into memory
+            */
+
+            // first 32 bytes, after the length prefix
+            r := mload(add(sig, 32))
+            // second 32 bytes
+            s := mload(add(sig, 64))
+            // final byte (first byte of the next 32 bytes)
+            v := byte(0, mload(add(sig, 96)))
         }
 
-        // Version of signature should be 27 or 28, but 0 and 1 are also possible versions
-        if (v < 27) {
-            v += 27;
-        }
-
-        require(v == 27 || v == 28, "Invalid signature version");
-
-        // The message hash that was signed is the keccak256 hash of the message
-        return ecrecover(_hash, v, r, s);
+        // implicitly return (r, s, v)
     }
 
     function revealMsg(string memory _message, uint _recordId) public {
