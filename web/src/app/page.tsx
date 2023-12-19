@@ -6,7 +6,8 @@ import { signTypedData } from "@wagmi/core";
 import { Button, Input, Textarea, RecordItem } from "@ensdomains/thorin";
 import { useState, useEffect, ChangeEvent } from "react";
 import NavBar from "./components/NavBar";
-import { useSignMessage } from "wagmi";
+import { useSignMessage, useContractRead, useContractWrite } from "wagmi";
+import counterABI from "../../../contracts/out/Counter.sol/Counter.json";
 import { recoverMessageAddress, Hex } from "viem";
 
 export default function Home() {
@@ -126,6 +127,47 @@ export default function Home() {
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <RecordItem value="user#123">{""}</RecordItem>
       </div>
+      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+        <Incrementor />
+        <ViewCounter />
+      </div>
     </main>
   );
 }
+const Incrementor = () => {
+  const { write, data, isLoading, error } = useContractWrite({
+    address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    abi: counterABI.abi,
+    functionName: "increment",
+  });
+
+  const handleClick = () => {
+    write();
+  };
+
+  if (isLoading) return <div>Transaction in progress...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <>
+      <Button onClick={handleClick} width="45">
+        Increment
+      </Button>
+    </>
+  );
+};
+
+const ViewCounter = () => {
+  const { data, isError, isLoading } = useContractRead({
+    address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    abi: counterABI.abi,
+    functionName: "number",
+  });
+  const displayData = data ? data.toString() : "No data";
+
+  return (
+    <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+      <RecordItem value="user#123">{displayData}</RecordItem>
+    </div>
+  );
+};
