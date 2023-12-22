@@ -5,8 +5,6 @@ pragma solidity ^0.8.19;
 import {SignatureChecker} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol";
 import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
-import "forge-std/console.sol";
-
 contract HashTruth {
     struct Record {
         uint id;
@@ -31,7 +29,7 @@ contract HashTruth {
                 _msgHash,
                 _msgHashSignature
             ),
-            "Invalid signature"
+            "Invalid signature."
         );
 
         records.push(
@@ -51,12 +49,11 @@ contract HashTruth {
         require(_recordId < records.length, "Record does not exist.");
         Record storage record = records[_recordId];
 
-        // Check if the message has already been revealed
+        // Ensure the message for this record hasn't been revealed yet
         require(
             record.msgRevealor == address(0),
             "Message has already been revealed."
         );
-        console.log(_message, _recordId);
         bytes32 _msgHash = keccak256(
             abi.encodePacked(
                 "\x19Ethereum Signed Message:\n",
