@@ -1,27 +1,38 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.19;
-import "openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol";
+
+import {SignatureChecker} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol";
+import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
+
+import "forge-std/console.sol";
 
 contract HashTruth {
-    using ECDSA for bytes32;
     struct Record {
         uint id;
         string message;
         bytes32 msgHash;
         address msgAuthor;
         address msgRevealor;
-        bytes msgSignature;
+        bytes msgHashSignature;
     }
 
     Record[] public records;
     uint public nextRecordId;
 
-    function addRecord(bytes memory _msgSignature, bytes32 _msgHash) public {
-        // Recover the signer from the signature and the message hash
-        address recoveredSigner = recoverSigner(_msgHash, _msgSignature);
-
+    function addRecord(
+        bytes32 _msgHash,
+        bytes memory _msgHashSignature
+    ) public {
         // Require that the signer is the same as the message sender
-        require(recoveredSigner == msg.sender, "Invalid signature");
+        require(
+            SignatureChecker.isValidSignatureNow(
+                msg.sender,
+                _msgHash,
+                _msgHashSignature
+            ),
+            "Invalid signature"
+        );
 
         records.push(
             Record(
@@ -30,45 +41,10 @@ contract HashTruth {
                 _msgHash,
                 msg.sender,
                 address(0),
-                _msgSignature
+                _msgHashSignature
             )
         );
         nextRecordId++;
-    }
-
-    function recoverSigner(
-        bytes32 _ethSignedMessageHash,
-        bytes memory _signature
-    ) public pure returns (address) {
-        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
-
-        return ecrecover(_ethSignedMessageHash, v, r, s);
-    }
-
-    function splitSignature(
-        bytes memory sig
-    ) public pure returns (bytes32 r, bytes32 s, uint8 v) {
-        require(sig.length == 65, "invalid signature length");
-
-        assembly {
-            /*
-            First 32 bytes stores the length of the signature
-
-            add(sig, 32) = pointer of sig + 32
-            effectively, skips first 32 bytes of signature
-
-            mload(p) loads next 32 bytes starting at the memory address p into memory
-            */
-
-            // first 32 bytes, after the length prefix
-            r := mload(add(sig, 32))
-            // second 32 bytes
-            s := mload(add(sig, 64))
-            // final byte (first byte of the next 32 bytes)
-            v := byte(0, mload(add(sig, 96)))
-        }
-
-        // implicitly return (r, s, v)
     }
 
     function revealMsg(string memory _message, uint _recordId) public {
@@ -80,10 +56,16 @@ contract HashTruth {
             record.msgRevealor == address(0),
             "Message has already been revealed."
         );
+        console.log(_message, _recordId);
+        bytes32 _msgHash = keccak256(
+            abi.encodePacked(
+                "\x19Ethereum Signed Message:\n",
+                Strings.toString(bytes(_message).length),
+                _message
+            )
+        );
 
-        bytes32 hashedMessage = keccak256(abi.encodePacked(_message));
-
-        if (hashedMessage == record.msgHash) {
+        if (_msgHash == record.msgHash) {
             record.msgRevealor = msg.sender;
             record.message = _message;
         } else {
@@ -91,7 +73,47 @@ contract HashTruth {
         }
     }
 
+    function getHashes(
+        string memory _message,
+        uint _recordId
+    ) public view returns (bytes32, bytes32, bytes32) {
+        require(_recordId < records.length, "Record does not exist.");
+        Record storage record = records[_recordId];
+
+        bytes32 hashedMessage = keccak256(abi.encodePacked(_message));
+        bytes32 existingHash = record.msgHash;
+        bytes32 digest = keccak256(
+            abi.encodePacked(
+                "\x19Ethereum Signed Message:\n",
+                Strings.toString(bytes(_message).length),
+                _message
+            )
+        );
+
+        return (hashedMessage, existingHash, digest);
+    }
+
     function getRecordsCount() public view returns (uint) {
         return records.length;
+    }
+
+    function getLength(string memory str) public pure returns (uint) {
+        // Convert string to bytes
+        bytes memory strBytes = bytes(str);
+        // Return the length of the byte array
+        return strBytes.length;
+    }
+
+    function isValidSignature(
+        bytes32 hash,
+        bytes memory signature
+    ) external view returns (bool) {
+        bool isValid = SignatureChecker.isValidSignatureNow(
+            msg.sender,
+            hash,
+            signature
+        );
+
+        return isValid;
     }
 }
