@@ -11,7 +11,7 @@ contract HashTruth {
     struct Record {
         uint id;
         string message;
-        bytes32 msgHash;
+        bytes32 msgHash; //keccak256("\x19Ethereum Signed Message:\n" + len(message) + message))
         address msgAuthor;
         address msgRevealor;
         bytes msgHashSignature;
@@ -39,8 +39,8 @@ contract HashTruth {
                 nextRecordId,
                 "", // Initially empty message
                 _msgHash,
-                msg.sender,
-                address(0),
+                msg.sender, //msgAuthor
+                address(0), //msgRevealor
                 _msgHashSignature
             )
         );
@@ -73,47 +73,7 @@ contract HashTruth {
         }
     }
 
-    function getHashes(
-        string memory _message,
-        uint _recordId
-    ) public view returns (bytes32, bytes32, bytes32) {
-        require(_recordId < records.length, "Record does not exist.");
-        Record storage record = records[_recordId];
-
-        bytes32 hashedMessage = keccak256(abi.encodePacked(_message));
-        bytes32 existingHash = record.msgHash;
-        bytes32 digest = keccak256(
-            abi.encodePacked(
-                "\x19Ethereum Signed Message:\n",
-                Strings.toString(bytes(_message).length),
-                _message
-            )
-        );
-
-        return (hashedMessage, existingHash, digest);
-    }
-
     function getRecordsCount() public view returns (uint) {
         return records.length;
-    }
-
-    function getLength(string memory str) public pure returns (uint) {
-        // Convert string to bytes
-        bytes memory strBytes = bytes(str);
-        // Return the length of the byte array
-        return strBytes.length;
-    }
-
-    function isValidSignature(
-        bytes32 hash,
-        bytes memory signature
-    ) external view returns (bool) {
-        bool isValid = SignatureChecker.isValidSignatureNow(
-            msg.sender,
-            hash,
-            signature
-        );
-
-        return isValid;
     }
 }
