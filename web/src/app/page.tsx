@@ -31,7 +31,7 @@ export default function Home() {
   };
 
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
-    message: hashedMsg,
+    message: secretMsg,
   });
 
   useEffect(() => {
@@ -62,7 +62,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const hash = keccak256(toHex(secretMsg));
+    const hash = keccak256(
+      toHex("\x19Ethereum Signed Message:\n" + secretMsg.length + secretMsg)
+    );
     setHashedMsg(hash);
   }, [secretMsg]);
 
