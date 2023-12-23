@@ -6,16 +6,15 @@ import {SignatureChecker} from "../lib/openzeppelin-contracts/contracts/utils/cr
 import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
 //TODO: Add events
-//TODO: change msgHash to msgHashSha256
 
 contract HashTruth {
     struct Record {
         uint id;
-        string message;
-        string msgHashSha256;
+        string message; //blank until revealed
+        string msgHashSha256; //store sha256 hash as this is commonly used
         address msgAuthor;
         address msgRevealor;
-        bytes msgHashSignature;
+        bytes msgHashSignature; //signature of the sha256 hash as string without 0x prefix
     }
 
     Record[] public records;
@@ -31,7 +30,7 @@ contract HashTruth {
                 Strings.toString(bytes(_msgHashSha256).length),
                 _msgHashSha256
             )
-        );
+        ); //
 
         // Require that the signer is the same as the message sender
         require(
