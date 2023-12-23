@@ -9,11 +9,13 @@ import NavBar from "./components/NavBar";
 import { useSignMessage, useContractRead, useContractWrite } from "wagmi";
 import counterABI from "../../../contracts/out/Counter.sol/Counter.json";
 import { recoverMessageAddress, Hex } from "viem";
+import { sha256 } from '@noble/hashes/sha256'
 
 export default function Home() {
   const [secretMsg, setSecretMsg] = useState("");
   const [hashedMsg, setHashedMsg] = useState("");
   const [signature, setSignature] = useState<Hex | undefined>(undefined);
+  const [sha256Msg, setSha256Msg] = useState("");
 
   const [message, setMessage] = useState<string>("");
 
@@ -31,7 +33,7 @@ export default function Home() {
   };
 
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
-    message: secretMsg,
+    message:sha256Msg,
   });
 
   useEffect(() => {
@@ -63,9 +65,15 @@ export default function Home() {
 
   useEffect(() => {
     const hash = keccak256(
-      toHex("\x19Ethereum Signed Message:\n" + secretMsg.length + secretMsg)
+      toHex("\x19Ethereum Signed Message:\n" + sha256Msg.length + sha256Msg)
     );
     setHashedMsg(hash);
+  }, [sha256Msg]);
+
+  useEffect(() => {
+    const hashArray = sha256(secretMsg);
+    const hashHex = Array.from(hashArray).map(b => b.toString(16).padStart(2, '0')).join('');
+    setSha256Msg(hashHex);
   }, [secretMsg]);
 
   return (
@@ -81,7 +89,15 @@ export default function Home() {
       </div>
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <Textarea
-          label="Read only"
+          label="sha256"
+          placeholder="Share your story…"
+          defaultValue={ sha256Msg}
+          readOnly
+        />
+      </div>
+      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+        <Textarea
+          label="hash for signing"
           placeholder="Share your story…"
           defaultValue={
             hashedMsg ===
