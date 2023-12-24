@@ -5,8 +5,6 @@ pragma solidity ^0.8.19;
 import {SignatureChecker} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol";
 import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
-//TODO: Add events
-
 contract HashTruth {
     struct Record {
         uint id;

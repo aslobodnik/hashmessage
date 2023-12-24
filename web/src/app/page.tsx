@@ -85,6 +85,7 @@ export default function Home() {
       </div>
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <ViewRecordCount />
+        <ViewRecord id={0} />
       </div>
     </main>
   );
@@ -95,7 +96,7 @@ const AddRecord: React.FC<AddRecordProps> = ({
 }) => {
   console.log("hash", msgHashSha256, "signature", msgHashSignature);
   const { write, data, isLoading, error } = useContractWrite({
-    address: "0x59b670e9fA9D0A427751Af201D676719a970857b",
+    address: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
     abi: hashTruthABI.abi,
     functionName: "addRecord",
     args: [msgHashSha256, msgHashSignature], // Use props here
@@ -119,7 +120,7 @@ const AddRecord: React.FC<AddRecordProps> = ({
 
 const ViewRecordCount = () => {
   const { data, isError, isLoading } = useContractRead({
-    address: "0x59b670e9fA9D0A427751Af201D676719a970857b",
+    address: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
     abi: hashTruthABI.abi,
     functionName: "getRecordsCount",
   });
@@ -128,6 +129,58 @@ const ViewRecordCount = () => {
   return (
     <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
       Total Records: {displayData}
+    </div>
+  );
+};
+
+const ViewRecord: React.FC<{ id: number }> = ({ id }) => {
+  const { data, isError, isLoading } = useContractRead({
+    address: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
+    abi: hashTruthABI.abi,
+    functionName: "records",
+    args: [id], // passing id as an argument to the getRecord function
+  });
+  const [
+    recordId,
+    message,
+    msgHashSha256,
+    msgAuthor,
+    msgRevealor,
+    msgHashSignature,
+  ] = data as [Number, string, string, string, string, string];
+
+  console.log("data", data);
+
+  return (
+    <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+      <table>
+        <tbody>
+          <tr>
+            <th>ID:</th>
+            <td>{recordId.toString()}</td>
+          </tr>
+          <tr>
+            <th>Message:</th>
+            <td>{message}</td>
+          </tr>
+          <tr>
+            <th>Message Hash (SHA-256):</th>
+            <td>{msgHashSha256}</td>
+          </tr>
+          <tr>
+            <th>Message Author:</th>
+            <td>{msgAuthor}</td>
+          </tr>
+          <tr>
+            <th>Message Revealor:</th>
+            <td>{msgRevealor}</td>
+          </tr>
+          <tr>
+            <th>Message Hash Signature:</th>
+            <td>{msgHashSignature}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };
