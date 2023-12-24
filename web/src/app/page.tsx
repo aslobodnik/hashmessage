@@ -239,9 +239,13 @@ function RevealMessage() {
   const { write, data, isError, isLoading } = useContractWrite(config);
 
   // Function to handle form submission
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    write(); // Execute the transaction
+    if (write) {
+      write(); // Execute the transaction only if write is defined
+    } else {
+      console.error("Write function is not available.");
+    }
   };
 
   return (
