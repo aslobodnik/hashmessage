@@ -114,3 +114,4 @@ contract HashTruth {
 }
 // forge create --rpc-url 127.0.0.1:8545 --private-key $private_key src/HashTruth.sol:HashTruth
 // cast send $contract "addRecord(string,bytes)" "a441b15fe9a3cf56661190a0b93b9dec7d04127288cc87250967cf3b52894d11" "0xae961c134edb319a9be449988365796bb2c4916d855a1133be91c3c1220b6fcf6777e28dce7e69576fe2289bdd96581365e5dafd2d7d6868a347f01fa9e0dd9a1b"  --private-key $private_key
+// cast call $contract "records(uint256)" 0
