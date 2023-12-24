@@ -17,6 +17,17 @@ contract HashTruth {
         bytes msgHashSignature; //signature of the sha256 hash as string without 0x prefix
     }
 
+    event RecordAdded(
+        string msgHashSha256,
+        address indexed msgAuthor,
+        bytes msgHashSignature
+    );
+    event RecordRevealed(
+        string message,
+        address indexed msgRevealor,
+        bool isCorrect
+    );
+
     Record[] public records;
     uint public nextRecordId;
 
@@ -52,6 +63,7 @@ contract HashTruth {
                 _msgHashSignature
             )
         );
+        emit RecordAdded(_msgHashSha256, msg.sender, _msgHashSignature);
         nextRecordId++;
     }
 
@@ -71,7 +83,9 @@ contract HashTruth {
         if (Strings.equal(_msgHashSha256, record.msgHashSha256)) {
             record.msgRevealor = msg.sender;
             record.message = _message;
+            emit RecordRevealed(_message, msg.sender, true);
         } else {
+            emit RecordRevealed(_message, msg.sender, false);
             revert("Hash mismatch.");
         }
     }
@@ -100,3 +114,5 @@ contract HashTruth {
         return string(str);
     }
 }
+// forge create --rpc-url 127.0.0.1:8545 --private-key $private_key src/HashTruth.sol:HashTruth
+// cast send $contract "addRecord(string,bytes)" "a441b15fe9a3cf56661190a0b93b9dec7d04127288cc87250967cf3b52894d11" "0xae961c134edb319a9be449988365796bb2c4916d855a1133be91c3c1220b6fcf6777e28dce7e69576fe2289bdd96581365e5dafd2d7d6868a347f01fa9e0dd9a1b"  --private-key $private_key
