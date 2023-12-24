@@ -1,18 +1,22 @@
 "use client";
-import { Address, keccak256, toHex } from "viem";
-import { Button, Input, Textarea, RecordItem } from "@ensdomains/thorin";
-import { useState, useEffect, ChangeEvent } from "react";
+import { keccak256, toHex, Hex } from "viem";
+import { Button, Input, RecordItem } from "@ensdomains/thorin";
+import { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
+import DisplayHash from "./components/DisplayHash";
 import {
   useSignMessage,
   useContractRead,
   useContractWrite,
   usePrepareContractWrite,
 } from "wagmi";
-import counterABI from "../../../contracts/out/Counter.sol/Counter.json";
 import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
-import { recoverMessageAddress, Hex } from "viem";
 import { sha256 } from "@noble/hashes/sha256";
+
+//todo: componentize as much as you
+//todo: create nice table with up to 5 records
+//todo: figure out how to import abi from foundry out without copying / pasting
+//todo: redesign page to be cleaner
 
 type AddRecordProps = {
   msgHashSha256: string;
@@ -27,12 +31,6 @@ export default function Home() {
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message: sha256Msg,
   });
-
-  useEffect(() => {
-    if (isSuccess) {
-      console.log({ data });
-    }
-  }, [isSuccess, data]);
 
   const handleButtonClick = () => {
     signMessage();
@@ -91,6 +89,9 @@ export default function Home() {
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <ViewRecordCount />
         <ViewRecord id={0} />
+        <ViewRecord id={1} />
+        <ViewRecord id={3} />
+        <ViewRecord id={4} />
       </div>
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <RevealMessage />
@@ -139,11 +140,27 @@ const ViewRecordCount = () => {
 };
 
 function ViewRecord({ id }: { id: number }) {
+  const bigId = BigInt(id);
   const { data, isError, isLoading } = useContractRead({
     address: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
-    abi: hashTruthABI.abi,
+    abi: [
+      {
+        type: "function",
+        name: "records",
+        inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+        outputs: [
+          { name: "id", type: "uint256", internalType: "uint256" },
+          { name: "message", type: "string", internalType: "string" },
+          { name: "msgHashSha256", type: "string", internalType: "string" },
+          { name: "msgAuthor", type: "address", internalType: "address" },
+          { name: "msgRevealor", type: "address", internalType: "address" },
+          { name: "msgHashSignature", type: "bytes", internalType: "bytes" },
+        ],
+        stateMutability: "view",
+      },
+    ] as const,
     functionName: "records",
-    args: [0], // passing id as an argument to the getRecord function
+    args: [bigId], // passing id as an argument to the getRecord function
   });
   console.log("data", data);
   const [
@@ -153,7 +170,7 @@ function ViewRecord({ id }: { id: number }) {
     msgAuthor,
     msgRevealor,
     msgHashSignature,
-  ] = data as [Number, string, string, string, string, string];
+  ] = data ?? [];
 
   console.log("data", data);
 
@@ -172,7 +189,7 @@ function ViewRecord({ id }: { id: number }) {
           <tr className="border-b border-gray-200">
             <td className="pl-3 break-all py-4">slobo.eth</td>
             <td className="text-right break-all pr-4 py-2">
-              <TruncatedHash hash={msgHashSha256} />
+              <DisplayHash hash={msgHashSha256 || ""} />
             </td>{" "}
             <td className="text-right p-0 flex items-center">
               <div className="w-full">
@@ -193,36 +210,6 @@ function ViewRecord({ id }: { id: number }) {
   );
 }
 
-const TruncatedHash: React.FC<{ hash: string }> = ({ hash }) => {
-  const truncatedHash = `${hash.substring(0, 6)}...${hash.substring(
-    hash.length - 6
-  )}`;
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(hash);
-    // Optionally, you could add feedback to the user (like a tooltip) that the text has been copied.
-  };
-
-  const hashChunks = hash.match(/.{1,16}/g) || [];
-
-  return (
-    <div className="relative group">
-      <div className="truncate cursor-pointer" onClick={copyToClipboard}>
-        {truncatedHash}
-        <button className="ml-2 underline text-blue-500 hover:text-blue-700">
-          Copy
-        </button>
-      </div>
-      <div className="absolute hidden group-hover:block bg-white shadow-lg p-2 rounded z-10 whitespace-pre-line transition-opacity duration-500 ">
-        {hashChunks.map((chunk: string, index: number) => (
-          <div className="font-mono my-1" key={index}>
-            {chunk}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
 function RevealMessage() {
   const [message, setMessage] = useState("");
   const [recordId, setRecordId] = useState(0);
