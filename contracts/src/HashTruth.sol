@@ -22,7 +22,7 @@ contract HashTruth {
         address indexed msgAuthor,
         bytes msgHashSignature
     );
-    event RecordRevealed(
+    event RevealMsg(
         string message,
         address indexed msgRevealor,
         bool isCorrect
@@ -83,9 +83,9 @@ contract HashTruth {
         if (Strings.equal(_msgHashSha256, record.msgHashSha256)) {
             record.msgRevealor = msg.sender;
             record.message = _message;
-            emit RecordRevealed(_message, msg.sender, true);
+            emit RevealMsg(_message, msg.sender, true);
         } else {
-            emit RecordRevealed(_message, msg.sender, false);
+            emit RevealMsg(_message, msg.sender, false);
             revert("Hash mismatch.");
         }
     }
