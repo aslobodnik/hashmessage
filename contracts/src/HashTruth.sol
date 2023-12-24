@@ -5,6 +5,10 @@ pragma solidity ^0.8.19;
 import {SignatureChecker} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol";
 import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
+//todo: expend events to include id
+//todo: check if i can sign and submit in one transaction
+//todo: decide if i need sign the reveal message -- i think yes
+//todo: remove is correct from reveal event
 contract HashTruth {
     struct Record {
         uint id;
