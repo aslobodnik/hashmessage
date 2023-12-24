@@ -3,7 +3,12 @@ import { Address, keccak256, toHex } from "viem";
 import { Button, Input, Textarea, RecordItem } from "@ensdomains/thorin";
 import { useState, useEffect, ChangeEvent } from "react";
 import NavBar from "./components/NavBar";
-import { useSignMessage, useContractRead, useContractWrite } from "wagmi";
+import {
+  useSignMessage,
+  useContractRead,
+  useContractWrite,
+  usePrepareContractWrite,
+} from "wagmi";
 import counterABI from "../../../contracts/out/Counter.sol/Counter.json";
 import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
 import { recoverMessageAddress, Hex } from "viem";
@@ -87,13 +92,13 @@ export default function Home() {
         <ViewRecordCount />
         <ViewRecord id={0} />
       </div>
+      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+        <RevealMessage />
+      </div>
     </main>
   );
 }
-const AddRecord: React.FC<AddRecordProps> = ({
-  msgHashSha256,
-  msgHashSignature,
-}) => {
+function AddRecord({ msgHashSha256, msgHashSignature }: AddRecordProps) {
   console.log("hash", msgHashSha256, "signature", msgHashSignature);
   const { write, data, isLoading, error } = useContractWrite({
     address: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
@@ -116,7 +121,7 @@ const AddRecord: React.FC<AddRecordProps> = ({
       </Button>
     </>
   );
-};
+}
 
 const ViewRecordCount = () => {
   const { data, isError, isLoading } = useContractRead({
@@ -133,13 +138,14 @@ const ViewRecordCount = () => {
   );
 };
 
-const ViewRecord: React.FC<{ id: number }> = ({ id }) => {
+function ViewRecord({ id }: { id: number }) {
   const { data, isError, isLoading } = useContractRead({
     address: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
     abi: hashTruthABI.abi,
     functionName: "records",
-    args: [id], // passing id as an argument to the getRecord function
+    args: [0], // passing id as an argument to the getRecord function
   });
+  console.log("data", data);
   const [
     recordId,
     message,
@@ -185,7 +191,7 @@ const ViewRecord: React.FC<{ id: number }> = ({ id }) => {
       </table>
     </div>
   );
-};
+}
 
 const TruncatedHash: React.FC<{ hash: string }> = ({ hash }) => {
   const truncatedHash = `${hash.substring(0, 6)}...${hash.substring(
@@ -217,3 +223,45 @@ const TruncatedHash: React.FC<{ hash: string }> = ({ hash }) => {
     </div>
   );
 };
+function RevealMessage() {
+  const [message, setMessage] = useState("");
+  const [recordId, setRecordId] = useState(0);
+
+  // Prepare the contract write operation
+  const { config } = usePrepareContractWrite({
+    address: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
+    abi: hashTruthABI.abi,
+    functionName: "revealMsg",
+    args: [message, recordId],
+  });
+
+  // Execute the contract write operation
+  const { write, data, isError, isLoading } = useContractWrite(config);
+
+  // Function to handle form submission
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    write(); // Execute the transaction
+  };
+
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Enter message"
+        />
+        <input
+          type="number"
+          value={recordId}
+          onChange={(e) => setRecordId(parseInt(e.target.value, 10))}
+          placeholder="Enter record ID"
+        />
+        <button type="submit">Reveal Message</button>
+      </form>
+      {/* Render your component based on data, isError, isLoading */}
+    </div>
+  );
+}
