@@ -152,35 +152,68 @@ const ViewRecord: React.FC<{ id: number }> = ({ id }) => {
   console.log("data", data);
 
   return (
-    <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
-      <table>
+    <div className="w-4/5 my-0 mx-auto bg-white rounded-lg p-5 min-w-[720px] h-fit">
+      <div className="text-lg mb-4 text-center font-semibold">Messages</div>
+      <table className="w-full min-w-[360px] border-collapse">
+        <thead>
+          <tr className="border-b border-gray-200">
+            <th className="text-left pl-3 py-2 opacity-60">Author</th>
+            <th className="text-right pl-2 pr-4 py-2 opacity-60">Hash</th>
+            <th className="text-right pl-2 pr-4 py-2 opacity-60">Message</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr>
-            <th>ID:</th>
-            <td>{recordId.toString()}</td>
-          </tr>
-          <tr>
-            <th>Message:</th>
-            <td>{message}</td>
-          </tr>
-          <tr>
-            <th>Message Hash (SHA-256):</th>
-            <td>{msgHashSha256}</td>
-          </tr>
-          <tr>
-            <th>Message Author:</th>
-            <td>{msgAuthor}</td>
-          </tr>
-          <tr>
-            <th>Message Revealor:</th>
-            <td>{msgRevealor}</td>
-          </tr>
-          <tr>
-            <th>Message Hash Signature:</th>
-            <td>{msgHashSignature}</td>
+          <tr className="border-b border-gray-200">
+            <td className="pl-3 break-all py-4">slobo.eth</td>
+            <td className="text-right break-all pr-4 py-2">
+              <TruncatedHash hash={msgHashSha256} />
+            </td>{" "}
+            <td className="text-right p-0 flex items-center">
+              <div className="w-full">
+                {message === "" ? (
+                  <input
+                    type="text"
+                    className="w-full text-right border-cyan-500 border-2 rounded-lg p-2"
+                  />
+                ) : (
+                  <span>{message}</span> // You can replace this with any other content you wish to display when message is not empty
+                )}
+              </div>
+            </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  );
+};
+
+const TruncatedHash: React.FC<{ hash: string }> = ({ hash }) => {
+  const truncatedHash = `${hash.substring(0, 6)}...${hash.substring(
+    hash.length - 6
+  )}`;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(hash);
+    // Optionally, you could add feedback to the user (like a tooltip) that the text has been copied.
+  };
+
+  const hashChunks = hash.match(/.{1,16}/g) || [];
+
+  return (
+    <div className="relative group">
+      <div className="truncate cursor-pointer" onClick={copyToClipboard}>
+        {truncatedHash}
+        <button className="ml-2 underline text-blue-500 hover:text-blue-700">
+          Copy
+        </button>
+      </div>
+      <div className="absolute hidden group-hover:block bg-white shadow-lg p-2 rounded z-10 whitespace-pre-line transition-opacity duration-500 ">
+        {hashChunks.map((chunk: string, index: number) => (
+          <div className="font-mono my-1" key={index}>
+            {chunk}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
