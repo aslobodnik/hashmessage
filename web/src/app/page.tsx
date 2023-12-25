@@ -16,7 +16,7 @@ import { sha256 } from "@noble/hashes/sha256";
 //todo: componentize as much as you
 //todo: create nice table with up to 5 records
 //todo: figure out how to import abi from foundry out without copying / pasting
-//todo: redesign page to be cleaner
+//todo: redesign page to be cleaner -- show signature and hash in table
 
 type AddRecordProps = {
   msgHashSha256: string;
@@ -51,6 +51,11 @@ export default function Home() {
     setSha256Msg(hashHex);
   }, [secretMsg]);
 
+  const truncatedHash = `${sha256Msg.substring(0, 6)}...${sha256Msg.substring(
+    sha256Msg.length - 6
+  )}`;
+  const hashChunks = sha256Msg.match(/.{1,16}/g) || [];
+
   return (
     <main className="flex min-h-screen flex-col  max-w-3xl w-full mx-auto px-1">
       <NavBar />
@@ -62,22 +67,20 @@ export default function Home() {
           onChange={(event) => setSecretMsg(event.target.value)}
         />
       </div>
-      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
-        <RecordItem keyLabel="sha256" value={sha256Msg}>
-          {sha256Msg}
-        </RecordItem>
+      <div className="relative group max-w-sm w-full sm:w-1/2 mx-auto  bg-white  rounded-lg mb-8">
+        <div className="truncate cursor-pointer py-2 px-2">
+          <span className=" text-gray-400 font-bold">sha256: </span>
+          {truncatedHash}
+        </div>
+        <div className="absolute ml-[200px]  -mt-20 opacity-0 group-hover:opacity-100 bg-white shadow-lg p-2 rounded-lg z-10 whitespace-pre-line transition-opacity duration-1500">
+          {hashChunks.map((chunk: string, index: number) => (
+            <div className="font-mono my-1" key={index}>
+              {chunk}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
-        <RecordItem keyLabel="keccak" value={hashedMsg}>
-          {hashedMsg}
-        </RecordItem>
-      </div>
-      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
-        <RecordItem keyLabel="signature" value={data ?? ""}>
-          {data ?? ""}
-        </RecordItem>
-      </div>
       <div className="pb-4  mx-auto">
         <Button onClick={handleButtonClick} width="45">
           Sign
@@ -253,6 +256,25 @@ function RevealMessage() {
         <button type="submit">Reveal Message</button>
       </form>
       {/* Render your component based on data, isError, isLoading */}
+    </div>
+  );
+}
+function HashDisplay({ label, hash }) {
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(hash);
+    // Optionally, implement feedback to the user (like changing button text to "Copied!" for a short time)
+  };
+
+  return (
+    <div className="max-w-md mx-auto bg-white p-4 shadow-md rounded flex items-center justify-between">
+      <span className="text-gray-700 font-semibold">{label}</span>
+      <span className="text-gray-600 font-mono">{hash}</span>
+      <button
+        onClick={copyToClipboard}
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Copy
+      </button>
     </div>
   );
 }
