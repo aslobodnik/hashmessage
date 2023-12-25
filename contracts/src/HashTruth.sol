@@ -5,10 +5,9 @@ pragma solidity ^0.8.19;
 import {SignatureChecker} from "../lib/openzeppelin-contracts/contracts/utils/cryptography/SignatureChecker.sol";
 import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
-//todo: expend events to include id
 //todo: check if i can sign and submit in one transaction
 //todo: decide if i need sign the reveal message -- i think yes
-//todo: remove is correct from reveal event
+
 contract HashTruth {
     struct Record {
         uint id;
@@ -20,14 +19,15 @@ contract HashTruth {
     }
 
     event RecordAdded(
+        uint indexed id,
         string msgHashSha256,
         address indexed msgAuthor,
         bytes msgHashSignature
     );
     event RevealMsg(
+        uint indexed id,
         string message,
-        address indexed msgRevealor,
-        bool isCorrect
+        address indexed msgRevealor
     );
 
     Record[] public records;
@@ -65,7 +65,12 @@ contract HashTruth {
                 _msgHashSignature
             )
         );
-        emit RecordAdded(_msgHashSha256, msg.sender, _msgHashSignature);
+        emit RecordAdded(
+            nextRecordId,
+            _msgHashSha256,
+            msg.sender,
+            _msgHashSignature
+        );
         nextRecordId++;
     }
 
@@ -85,9 +90,8 @@ contract HashTruth {
         if (Strings.equal(_msgHashSha256, record.msgHashSha256)) {
             record.msgRevealor = msg.sender;
             record.message = _message;
-            emit RevealMsg(_message, msg.sender, true);
+            emit RevealMsg(_recordId, _message, msg.sender);
         } else {
-            emit RevealMsg(_message, msg.sender, false);
             revert("Hash mismatch.");
         }
     }
@@ -98,7 +102,7 @@ contract HashTruth {
 
     function hashString(
         string memory _message
-    ) public pure returns (string memory) {
+    ) internal pure returns (string memory) {
         return bytes32ToString(sha256(abi.encodePacked(_message)));
     }
 

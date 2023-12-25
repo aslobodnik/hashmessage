@@ -18,14 +18,16 @@ contract HashTruthTest is Test {
     string internal msgSha256;
 
     event RecordAdded(
+        uint indexed id,
         string msgHashSha256,
         address indexed msgAuthor,
         bytes msgHashSignature
     );
+
     event RevealMsg(
+        uint indexed id,
         string message,
-        address indexed msgRevealor,
-        bool isCorrect
+        address indexed msgRevealor
     );
 
     function setUp() public {
@@ -122,8 +124,9 @@ contract HashTruthTest is Test {
     }
 
     function testEmitRecordAdded() public {
-        vm.expectEmit(false, true, false, true);
+        vm.expectEmit(true, false, true, true);
         emit RecordAdded(
+            0,
             "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
             user1,
             signature
@@ -144,8 +147,8 @@ contract HashTruthTest is Test {
         );
         vm.stopPrank();
         vm.prank(user2);
-        vm.expectEmit(false, true, false, true);
-        emit RevealMsg("test", user2, true);
+        vm.expectEmit(true, false, true, true);
+        emit RevealMsg(0, "test", user2);
 
         hashTruth.revealMsg("test", 0);
         vm.stopPrank();
