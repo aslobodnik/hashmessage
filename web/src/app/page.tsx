@@ -259,22 +259,3 @@ function RevealMessage() {
     </div>
   );
 }
-function HashDisplay({ label, hash }) {
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(hash);
-    // Optionally, implement feedback to the user (like changing button text to "Copied!" for a short time)
-  };
-
-  return (
-    <div className="max-w-md mx-auto bg-white p-4 shadow-md rounded flex items-center justify-between">
-      <span className="text-gray-700 font-semibold">{label}</span>
-      <span className="text-gray-600 font-mono">{hash}</span>
-      <button
-        onClick={copyToClipboard}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Copy
-      </button>
-    </div>
-  );
-}
