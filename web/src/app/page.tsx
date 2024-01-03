@@ -25,10 +25,9 @@ import { sha256 } from "@noble/hashes/sha256";
 //todo: componentize as much as you
 //todo: figure out how to import abi from foundry out without copying / pasting
 //todo: redesign page to be cleaner -- show signature and hash in table
-//todo: change sign button to "connect wallet" if not connected
-//todo:
 
 const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const BUTTON_WIDTH = "40";
 
 type Record = {
   id: number;
@@ -47,16 +46,14 @@ export default function Home() {
   const [secretMsg, setSecretMsg] = useState("");
   const [hashedMsg, setHashedMsg] = useState("");
   const [sha256Msg, setSha256Msg] = useState("");
+  const [isSigned, setIsSigned] = useState(false);
+  const [isProcessingNewMessage, setIsProcessingNewMessage] = useState(false);
 
   const { isDisconnected } = useAccount();
 
-  const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
+  const { data, isSuccess, signMessage, isLoading } = useSignMessage({
     message: sha256Msg,
   });
-
-  const handleButtonClick = () => {
-    signMessage();
-  };
 
   useEffect(() => {
     const hash = keccak256(
@@ -71,55 +68,92 @@ export default function Home() {
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
     setSha256Msg(hashHex);
+
+    setIsSigned(false); // Reset isSigned when secretMsg changes
+    setIsProcessingNewMessage(true); // Indicate a new message is being processed
   }, [secretMsg]);
 
+  useEffect(() => {
+    if (isSuccess && !isProcessingNewMessage) {
+      setIsSigned(true);
+    }
+  }, [isSuccess, isProcessingNewMessage]);
+
+  const handleSigning = () => {
+    setIsProcessingNewMessage(false); // Reset this flag when signing a message
+    signMessage();
+  };
+  console.log({ isSigned: isSigned, data: data });
   return (
     <main className="flex min-h-screen flex-col  max-w-3xl w-full mx-auto px-1">
       <NavBar />
       <h1 className="text-2xl font-bold text-center mb-4 opacity-80">
-        Secret Keeper
+        TestiFi
       </h1>
-      <div className="sm:px-16 px-4 flex-col">
+      <div className="sm:px-16 px-4 flex-col ">
         <Input
           label="Predication"
           placeholder="ETH will hit $10,000 before 2030."
           value={secretMsg}
           onChange={(event) => setSecretMsg(event.target.value)}
         />
-        <div className="mx-auto w-fit">
-          <div className="pt-4  pl-2  text-custom-blue-gray font-bold">
-            Sha256
-          </div>
-          <div className="flex">
-            <div className="  w-fit rounded-lg px-4 py-2 mt-2   mb-3 bg-white">
-              {chunkHash(sha256Msg).map((chunk, index) => (
-                <div className="font-mono my-1 mx-auto w-fit" key={index}>
-                  {chunk}
-                </div>
-              ))}
-            </div>
-            <div className="ml-4 mt-2">
-              <Button
-                onClick={handleButtonClick}
-                disabled={isDisconnected}
-                width="45"
-              >
-                {isDisconnected ? "Connect Wallet" : "Sign"}
-              </Button>
-              <div className="mt-4">
-                <AddRecord msgHashSha256={sha256Msg} msgHashSignature={data} />
+        <div className="pt-4  pl-2  text-custom-blue-gray font-bold">
+          Sha256
+        </div>
+        <div className="flex">
+          {/* hash */}
+          <div className="flex-col">
+            {/* Desktop View */}
+            <div className="w-fit rounded-lg px-4 py-2 mt-2 mb-3 bg-white">
+              <div className="hidden sm:block">
+                {chunkHash(sha256Msg, 32).map((chunk, index) => (
+                  <div className="font-mono my-1 mx-auto w-fit" key={index}>
+                    {chunk}
+                  </div>
+                ))}
+              </div>
+              {/* Mobile View */}
+              <div className="block sm:hidden">
+                {chunkHash(sha256Msg, 16).map((chunk, index) => (
+                  <div className="font-mono my-1 mx-auto w-fit" key={index}>
+                    {chunk}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+          {/* sign / create buttons */}
+          <div className="flex flex-col justify-center ml-4">
+            {!isSigned && (
+              <Button
+                onClick={handleSigning}
+                disabled={isDisconnected}
+                width={BUTTON_WIDTH}
+              >
+                {isDisconnected
+                  ? "Connect Wallet"
+                  : isLoading
+                  ? "Signing..."
+                  : "Sign"}
+              </Button>
+            )}
+            {isSigned && (
+              <div className="">
+                <AddRecord msgHashSha256={sha256Msg} msgHashSignature={data} />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-
-      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
-        <ViewRecordCount />
+        <div className="pt-4  pl-2  text-custom-blue-gray font-bold">
+          Reveal
+        </div>
       </div>
 
       <div>
         <RecordTable records={dummyRecords} />
+      </div>
+      <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
+        <ViewRecordCount />
       </div>
     </main>
   );
@@ -131,19 +165,18 @@ function AddRecord({
   msgHashSha256: string;
   msgHashSignature: Hex | undefined;
 }) {
-  console.log("hash", msgHashSha256, "signature", msgHashSignature);
   const { write, data, isLoading, error } = useContractWrite({
-    address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    address: CONTRACT_ADDRESS,
     abi: hashTruthABI.abi,
     functionName: "addRecord",
-    args: [msgHashSha256, msgHashSignature], // Use props here
+    args: [msgHashSha256, msgHashSignature],
   });
 
   const handleClick = () => {
     write();
   };
 
-  if (isLoading) return <div>Transaction in progress...</div>;
+  if (isLoading) return <Button width={BUTTON_WIDTH}>Creating...</Button>;
   if (error) return <div>Error: {error.message}</div>;
 
   return (
@@ -151,7 +184,7 @@ function AddRecord({
       <Button
         onClick={handleClick}
         disabled={msgHashSignature === undefined}
-        width="45"
+        width={BUTTON_WIDTH}
       >
         Create
       </Button>
@@ -278,10 +311,14 @@ function RecordTable({ records }: RecordTableProps) {
   return (
     <>
       <div className="sm:w-4/5 mx-2 my-0 sm:mx-auto bg-white rounded-lg p-5 sm:min-w-[620px] h-fit">
-        <div className="text-lg mb-4 font-semibold flex justify-between items-center w-full">
+        <div className="text-lg mb-4 font-semibold flex justify-between items-center w-full relative">
           <div className="flex-grow text-center">Messages</div>
-          <div className=" text-sm text-gray-500 pr-2">Show Input</div>
-          <Toggle checked={showInput} onChange={handleToggle} size="small" />
+          <div className="flex absolute right-0">
+            <div className="  my-auto text-sm text-gray-500 pr-2">
+              Show Input
+            </div>
+            <Toggle checked={showInput} onChange={handleToggle} size="small" />
+          </div>
         </div>
 
         {/* Mobile View */}
