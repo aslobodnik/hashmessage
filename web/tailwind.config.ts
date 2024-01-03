@@ -6,7 +6,14 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: {},
+  theme: {
+    extend: {
+      colors: {
+        "custom-blue-gray": "hsl(240, 6%, 63%)", // thorin blue-gray
+      },
+    },
+  },
   plugins: [],
 };
+
 export default config;
