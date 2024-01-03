@@ -17,14 +17,16 @@ import {
   useContractRead,
   useContractWrite,
   usePrepareContractWrite,
+  useAccount,
 } from "wagmi";
 import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
 import { sha256 } from "@noble/hashes/sha256";
 
 //todo: componentize as much as you
-//todo: create nice table with up to 5 records
 //todo: figure out how to import abi from foundry out without copying / pasting
 //todo: redesign page to be cleaner -- show signature and hash in table
+//todo: change sign button to "connect wallet" if not connected
+//todo:
 
 const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
@@ -45,6 +47,8 @@ export default function Home() {
   const [secretMsg, setSecretMsg] = useState("");
   const [hashedMsg, setHashedMsg] = useState("");
   const [sha256Msg, setSha256Msg] = useState("");
+
+  const { isDisconnected } = useAccount();
 
   const { data, isError, isLoading, isSuccess, signMessage } = useSignMessage({
     message: sha256Msg,
@@ -95,8 +99,12 @@ export default function Home() {
               ))}
             </div>
             <div className="ml-4 mt-2">
-              <Button onClick={handleButtonClick} width="45">
-                Sign
+              <Button
+                onClick={handleButtonClick}
+                disabled={isDisconnected}
+                width="45"
+              >
+                {isDisconnected ? "Connect Wallet" : "Sign"}
               </Button>
               <div className="mt-4">
                 <AddRecord msgHashSha256={sha256Msg} msgHashSignature={data} />
