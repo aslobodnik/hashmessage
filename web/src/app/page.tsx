@@ -69,47 +69,43 @@ export default function Home() {
     setSha256Msg(hashHex);
   }, [secretMsg]);
 
-  const truncatedHash = `${sha256Msg.substring(0, 6)}...${sha256Msg.substring(
-    sha256Msg.length - 6
-  )}`;
-  const hashChunks = sha256Msg.match(/.{1,16}/g) || [];
-
   return (
     <main className="flex min-h-screen flex-col  max-w-3xl w-full mx-auto px-1">
       <NavBar />
-      <h1 className="text-2xl font-bold text-center mt-4 mb-4 opacity-80">
+      <h1 className="text-2xl font-bold text-center mb-4 opacity-80">
         Secret Keeper
       </h1>
-      <div className="sm:px-16 px-4">
+      <div className="sm:px-16 px-4 flex-col">
         <Input
           label="Predication"
           placeholder="ETH will hit $10,000 before 2030."
           value={secretMsg}
           onChange={(event) => setSecretMsg(event.target.value)}
         />
-      </div>
-      <div className="relative group max-w-sm w-full sm:w-1/2 mx-auto  bg-white  rounded-lg mb-8">
-        <div className="truncate cursor-pointer py-2 px-2">
-          <span className=" text-gray-400 font-bold">sha256: </span>
-          {truncatedHash}
-        </div>
-        <div className="absolute ml-[200px]  -mt-20 opacity-0 group-hover:opacity-100 bg-white shadow-lg p-2 rounded-lg z-10 whitespace-pre-line transition-opacity duration-1500">
-          {hashChunks.map((chunk: string, index: number) => (
-            <div className="font-mono my-1" key={index}>
-              {chunk}
+        <div className="mx-auto w-fit">
+          <div className="pt-4  pl-2  text-custom-blue-gray font-bold">
+            Sha256
+          </div>
+          <div className="flex">
+            <div className="  w-fit rounded-lg px-4 py-2 mt-2   mb-3 bg-white">
+              {chunkHash(sha256Msg).map((chunk, index) => (
+                <div className="font-mono my-1 mx-auto w-fit" key={index}>
+                  {chunk}
+                </div>
+              ))}
             </div>
-          ))}
+            <div className="ml-4 mt-2">
+              <Button onClick={handleButtonClick} width="45">
+                Sign
+              </Button>
+              <div className="mt-4">
+                <AddRecord msgHashSha256={sha256Msg} msgHashSignature={data} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="pb-4  mx-auto">
-        <Button onClick={handleButtonClick} width="45">
-          Sign
-        </Button>
-      </div>
-      <div className="pb-4  mx-auto">
-        <AddRecord msgHashSha256={sha256Msg} msgHashSignature={data} />
-      </div>
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <ViewRecordCount />
       </div>
@@ -144,8 +140,12 @@ function AddRecord({
 
   return (
     <>
-      <Button onClick={handleClick} width="45">
-        Add Record
+      <Button
+        onClick={handleClick}
+        disabled={msgHashSignature === undefined}
+        width="45"
+      >
+        Create
       </Button>
     </>
   );
