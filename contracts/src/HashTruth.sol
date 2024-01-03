@@ -29,6 +29,8 @@ contract HashTruth {
         address indexed msgRevealor
     );
 
+    mapping(string => bool) private hashExits; // Mapping to track used hashes
+
     Record[] public records;
     uint public nextRecordId;
 
@@ -36,6 +38,8 @@ contract HashTruth {
         string memory _msgHashSha256,
         bytes memory _msgHashSignature
     ) public {
+        require(!hashExits[_msgHashSha256], "Hash already exists.");
+
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19Ethereum Signed Message:\n",
@@ -64,6 +68,9 @@ contract HashTruth {
                 _msgHashSignature
             )
         );
+
+        hashExits[_msgHashSha256] = true; // Mark this hash as added
+
         emit RecordAdded(
             nextRecordId,
             _msgHashSha256,
