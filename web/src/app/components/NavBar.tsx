@@ -5,17 +5,17 @@ import { usePathname } from "next/navigation";
 const NavBar = () => {
   const pathname = usePathname();
   return (
-    <nav className="flex justify-between px-2 py-8 w-full max-w-xl  my-0 mx-auto  relative min-w-[360px]">
-      <div className="flex gap-x-4 font-sans text-lg text-gray-700  font-bold">
+    <nav className="flex justify-between px-2 py-8 w-full max-w-3xl  my-0 mx-auto  relative min-w-[360px]">
+      <div className="flex gap-x-4 font-sans text-lg text-gray-700    font-bold">
         <Link className={pathname === "/" ? "text-blue-500" : ""} href="/">
           {" "}
-          Submit
+          Create
         </Link>
         <Link
-          className={pathname === "/view" ? "text-blue-500" : ""}
-          href="/view"
+          className={pathname === "/how" ? "text-blue-500" : ""}
+          href="/how"
         >
-          View
+          How It Works
         </Link>
       </div>
       <div>
