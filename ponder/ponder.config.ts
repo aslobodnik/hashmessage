@@ -14,7 +14,7 @@ export default createConfig({
     ExampleContract: {
       network: "localhost",
       abi: ExampleContractAbi,
-      address: "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E",
+      address: "0x0B306BF915C4d645ff596e518fAf3F9669b97016",
       startBlock: 1,
     },
   },
