@@ -15,7 +15,7 @@ export const ExampleContractAbi = [
       },
     ],
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
   },
   {
     type: "function",
@@ -23,13 +23,6 @@ export const ExampleContractAbi = [
     inputs: [],
     outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "hashString",
-    inputs: [{ name: "_message", type: "string", internalType: "string" }],
-    outputs: [{ name: "", type: "string", internalType: "string" }],
-    stateMutability: "pure",
   },
   {
     type: "function",
@@ -48,13 +41,18 @@ export const ExampleContractAbi = [
       { name: "msgHashSha256", type: "string", internalType: "string" },
       { name: "msgAuthor", type: "address", internalType: "address" },
       { name: "msgRevealor", type: "address", internalType: "address" },
-      { name: "msgHashSignature", type: "bytes", internalType: "bytes" },
+      {
+        name: "msgHashSignature",
+        type: "bytes",
+        internalType: "bytes",
+      },
+      { name: "bounty", type: "uint256", internalType: "uint256" },
     ],
     stateMutability: "view",
   },
   {
     type: "function",
-    name: "revealMsg",
+    name: "revealAndClaimBounty",
     inputs: [
       { name: "_message", type: "string", internalType: "string" },
       { name: "_recordId", type: "uint256", internalType: "uint256" },
@@ -66,6 +64,12 @@ export const ExampleContractAbi = [
     type: "event",
     name: "RecordAdded",
     inputs: [
+      {
+        name: "id",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
       {
         name: "msgHashSha256",
         type: "string",
@@ -84,13 +88,25 @@ export const ExampleContractAbi = [
         indexed: false,
         internalType: "bytes",
       },
+      {
+        name: "bounty",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
     ],
     anonymous: false,
   },
   {
     type: "event",
-    name: "RevealMsg",
+    name: "RevealAndClaimBounty",
     inputs: [
+      {
+        name: "id",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
       {
         name: "message",
         type: "string",
@@ -104,10 +120,10 @@ export const ExampleContractAbi = [
         internalType: "address",
       },
       {
-        name: "isCorrect",
-        type: "bool",
-        indexed: false,
-        internalType: "bool",
+        name: "bounty",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
       },
     ],
     anonymous: false,
