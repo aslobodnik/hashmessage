@@ -1,5 +1,5 @@
 "use client";
-import { keccak256, toHex, Hex, Address } from "viem";
+import { keccak256, toHex, Hex, Address, parseEther } from "viem";
 import {
   Button,
   Input,
@@ -8,8 +8,9 @@ import {
   CheckCircleSVG,
   CrossSVG,
   Toggle,
+  Checkbox,
 } from "@ensdomains/thorin";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import NavBar from "./components/NavBar";
 //import DisplayHash from "./components/DisplayHash";
 import {
@@ -21,12 +22,15 @@ import {
 } from "wagmi";
 import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
 import { sha256 } from "@noble/hashes/sha256";
+import { isMatch } from "date-fns";
 
 //todo: componentize as much as you
 //todo: figure out how to import abi from foundry out without copying / pasting
 //todo: redesign page to be cleaner -- show signature and hash in table
+//todo: success message
+//todo: reset state after success
 
-const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const CONTRACT_ADDRESS = "0x0B306BF915C4d645ff596e518fAf3F9669b97016";
 const BUTTON_WIDTH = "40";
 
 type Record = {
@@ -36,6 +40,7 @@ type Record = {
   msgAuthor: Address;
   msgRevealor: Address;
   msgHashSignature: string;
+  bounty: string; // in ether
 };
 
 type RecordTableProps = {
@@ -46,10 +51,29 @@ export default function Home() {
   const [secretMsg, setSecretMsg] = useState("");
   const [hashedMsg, setHashedMsg] = useState("");
   const [sha256Msg, setSha256Msg] = useState("");
+  const [bounty, setBounty] = useState("");
   const [isSigned, setIsSigned] = useState(false);
+  const [isBountyChecked, setIsBountyChecked] = useState(false);
   const [isProcessingNewMessage, setIsProcessingNewMessage] = useState(false);
+  const [recordCreationSuccess, setRecordCreationSuccess] =
+    useState<boolean>(false);
+
+  const handleRecordCreationSuccess = (success: boolean) => {
+    setRecordCreationSuccess(success);
+  };
 
   const { isDisconnected } = useAccount();
+
+  useEffect(() => {
+    if (recordCreationSuccess) {
+      setTimeout(() => {
+        setRecordCreationSuccess(false);
+        setSecretMsg("");
+        setIsSigned(false);
+      }, 5000);
+      ``;
+    }
+  }, [recordCreationSuccess]);
 
   const { data, isSuccess, signMessage, isLoading } = useSignMessage({
     message: sha256Msg,
@@ -90,13 +114,43 @@ export default function Home() {
       <h1 className="text-2xl font-bold text-center mb-4 opacity-80">
         TestiFi
       </h1>
-      <div className="sm:px-16 px-4 flex-col ">
-        <Input
-          label="Predication"
-          placeholder="ETH will hit $10,000 before 2030."
-          value={secretMsg}
-          onChange={(event) => setSecretMsg(event.target.value)}
-        />
+      <div className="sm:px-16 px-4  flex-col ml-1">
+        <div className="flex">
+          <Input
+            label="Predication"
+            placeholder="ETH will hit $10,000 before 2030."
+            value={secretMsg}
+            onChange={(event) => setSecretMsg(event.target.value)}
+          />
+          {/* bounty */}
+          {isBountyChecked && (
+            <div className="ml-2">
+              <Input
+                label="Bounty"
+                placeholder="0.01 ETH"
+                value={bounty}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  const decimalRegex = /^[0-9]*\.?[0-9]*$/;
+                  const numValue = parseFloat(value);
+
+                  // Ensure the value is a decimal
+                  if (decimalRegex.test(value)) {
+                    setBounty(value);
+                  }
+                }}
+                inputMode="decimal"
+              />
+            </div>
+          )}
+        </div>
+        <div className="ml-1 mt-3">
+          <Checkbox
+            label="Bounty"
+            checked={isBountyChecked}
+            onChange={(event) => setIsBountyChecked(event.target.checked)}
+          />
+        </div>
         <div className="pt-4  pl-2  text-custom-blue-gray font-bold">
           Sha256
         </div>
@@ -104,22 +158,18 @@ export default function Home() {
           {/* hash */}
           <div className="flex-col">
             {/* Desktop View */}
-            <div className="w-fit rounded-lg px-4 py-2 mt-2 mb-3 bg-white">
-              <div className="hidden sm:block">
-                {chunkHash(sha256Msg, 32).map((chunk, index) => (
-                  <div className="font-mono my-1 mx-auto w-fit" key={index}>
-                    {chunk}
-                  </div>
-                ))}
-              </div>
-              {/* Mobile View */}
-              <div className="block sm:hidden">
-                {chunkHash(sha256Msg, 16).map((chunk, index) => (
-                  <div className="font-mono my-1 mx-auto w-fit" key={index}>
-                    {chunk}
-                  </div>
-                ))}
-              </div>
+            <div
+              className={`w-fit rounded-lg px-4 py-2 mt-2 mb-3 ${
+                recordCreationSuccess
+                  ? "bg-green-100 border-green-500 border-2"
+                  : "bg-white"
+              }`}
+            >
+              {" "}
+              {recordCreationSuccess && (
+                <div className="text-green-600 text-center">🎉 Success! 🎉</div>
+              )}
+              <HashDisplay hash={sha256Msg} />
             </div>
           </div>
           {/* sign / create buttons */}
@@ -139,13 +189,15 @@ export default function Home() {
             )}
             {isSigned && (
               <div className="">
-                <AddRecord msgHashSha256={sha256Msg} msgHashSignature={data} />
+                <AddRecord
+                  msgHashSha256={sha256Msg}
+                  msgHashSignature={data}
+                  onRecordCreationSuccess={handleRecordCreationSuccess}
+                  bounty={bounty}
+                />
               </div>
             )}
           </div>
-        </div>
-        <div className="pt-4  pl-2  text-custom-blue-gray font-bold">
-          Reveal
         </div>
       </div>
 
@@ -161,20 +213,29 @@ export default function Home() {
 function AddRecord({
   msgHashSha256,
   msgHashSignature,
+  onRecordCreationSuccess,
+  bounty = "0",
 }: {
   msgHashSha256: string;
   msgHashSignature: Hex | undefined;
+  onRecordCreationSuccess: (success: boolean) => void;
+  bounty?: string;
 }) {
-  const { write, data, isLoading, error } = useContractWrite({
+  const { write, data, isLoading, error, isSuccess } = useContractWrite({
     address: CONTRACT_ADDRESS,
     abi: hashTruthABI.abi,
     functionName: "addRecord",
     args: [msgHashSha256, msgHashSignature],
+    value: parseEther(bounty),
   });
-
+  console.log({ bounty, value: parseEther(bounty) });
   const handleClick = () => {
     write();
   };
+
+  useEffect(() => {
+    onRecordCreationSuccess(isSuccess);
+  }, [isSuccess, onRecordCreationSuccess]);
 
   if (isLoading) return <Button width={BUTTON_WIDTH}>Creating...</Button>;
   if (error) return <div>Error: {error.message}</div>;
@@ -192,6 +253,28 @@ function AddRecord({
   );
 }
 
+function HashDisplay({ hash }: { hash: string }) {
+  return (
+    <>
+      {/* Desktop View */}
+      <div className="hidden sm:block">
+        {chunkHash(hash, 32).map((chunk, index) => (
+          <div className="font-mono my-1 mx-auto w-fit" key={index}>
+            {chunk}
+          </div>
+        ))}
+      </div>
+      {/* Mobile View */}
+      <div className="block sm:hidden">
+        {chunkHash(hash, 16).map((chunk, index) => (
+          <div className="font-mono my-1 mx-auto w-fit" key={index}>
+            {chunk}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
 const ViewRecordCount = () => {
   const { data, isError, isLoading } = useContractRead({
     address: CONTRACT_ADDRESS,
