@@ -24,7 +24,7 @@ export function usePonder() {
 `;
 
   const variables = {
-    first: 100, // set the value of 'first' here
+    first: 1000, // set the value of 'first' here
     // skip: start,
     // owner: owner,
   };

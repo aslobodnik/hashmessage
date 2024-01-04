@@ -4,7 +4,7 @@ ponder.on("ExampleContract:RecordAdded", async ({ event, context }) => {
   const db = context.db.Record;
 
   await db.create({
-    id: event.transaction.hash,
+    id: event.args.id.toString(),
     data: {
       message: "",
       msgHashSha256: event.args.msgHashSha256,
