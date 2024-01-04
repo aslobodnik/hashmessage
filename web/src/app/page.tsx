@@ -1,5 +1,5 @@
 "use client";
-import { keccak256, toHex, Hex, Address, parseEther } from "viem";
+import { keccak256, toHex, Hex, Address, parseEther, formatEther } from "viem";
 import {
   Button,
   Input,
@@ -10,7 +10,7 @@ import {
   Toggle,
   Checkbox,
 } from "@ensdomains/thorin";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
 //import DisplayHash from "./components/DisplayHash";
 import {
@@ -22,7 +22,6 @@ import {
 } from "wagmi";
 import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
 import { sha256 } from "@noble/hashes/sha256";
-import { isMatch } from "date-fns";
 import { usePonder } from "@/hooks/usePonder";
 
 //todo: componentize as much as you
@@ -64,9 +63,6 @@ export default function Home() {
   };
 
   const { isDisconnected } = useAccount();
-
-  const ponder = usePonder();
-  console.log({ ponder });
 
   useEffect(() => {
     if (recordCreationSuccess) {
@@ -203,10 +199,13 @@ export default function Home() {
             )}
           </div>
         </div>
+        <div className="mb-4">
+          <RevealAndClaim recordId={BigInt(9)} />
+        </div>
       </div>
 
       <div>
-        <RecordTable records={dummyRecords} />
+        <RecordTable />
       </div>
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <ViewRecordCount />
@@ -294,7 +293,7 @@ const ViewRecordCount = () => {
   );
 };
 
-function RevealMessage({ recordId = BigInt(1) }: { recordId: bigint }) {
+function RevealAndClaim({ recordId = BigInt(0) }: { recordId: bigint }) {
   const [message, setMessage] = useState("");
   const [userSha256Msg, setUserSha256Msg] = useState("");
   const [isMatch, setIsMatch] = useState<boolean>();
@@ -311,7 +310,7 @@ function RevealMessage({ recordId = BigInt(1) }: { recordId: bigint }) {
   const { config } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
     abi: hashTruthABI.abi,
-    functionName: "revealMsg",
+    functionName: "revealAndClaimBounty",
     args: [message, recordId],
   });
 
@@ -328,7 +327,12 @@ function RevealMessage({ recordId = BigInt(1) }: { recordId: bigint }) {
           { name: "msgHashSha256", type: "string", internalType: "string" },
           { name: "msgAuthor", type: "address", internalType: "address" },
           { name: "msgRevealor", type: "address", internalType: "address" },
-          { name: "msgHashSignature", type: "bytes", internalType: "bytes" },
+          {
+            name: "msgHashSignature",
+            type: "bytes",
+            internalType: "bytes",
+          },
+          { name: "bounty", type: "uint256", internalType: "uint256" },
         ],
         stateMutability: "view",
       },
@@ -357,6 +361,7 @@ function RevealMessage({ recordId = BigInt(1) }: { recordId: bigint }) {
   useEffect(() => {
     if (!isLoading && !isError && data) {
       const recordSha256Msg = data[2];
+      console.log({ recordSha256Msg, userSha256Msg, recordId });
       setIsMatch(recordSha256Msg === userSha256Msg);
     }
   }, [data, isLoading, isError, userSha256Msg]);
@@ -368,28 +373,40 @@ function RevealMessage({ recordId = BigInt(1) }: { recordId: bigint }) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Enter message"
-          className="border border-gray-300 rounded-md p-2 pr-5 w-full" // Increased right padding
+          className="border border-gray-300 rounded-md p-2 pr-5 w-full"
         />
 
         <div className="-ml-5 flex my-auto">
           {isMatch !== undefined &&
             (isMatch ? (
-              <CheckCircleSVG className=" text-green-600" />
+              <CheckCircleSVG className="text-green-600" />
             ) : (
               message && <CrossSVG className="text-red-300" />
             ))}
         </div>
 
-        {/* <button type="submit" className="mt-2">
+        {/* Button to submit the form and trigger the reveal */}
+        <button type="submit" className="ml-2 btn-primary">
           Reveal Message
-        </button> */}
+        </button>
       </form>
     </div>
   );
 }
 
-function RecordTable({ records }: RecordTableProps) {
+function RecordTable() {
   const [showInput, setShowInput] = useState<boolean>(false);
+
+  const ponder = usePonder();
+
+  // Handle loading state
+  if (ponder.isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // Use actual records from ponder
+  const records = ponder.records || [];
+  console.log({ records });
 
   const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setShowInput(event.target.checked);
@@ -428,7 +445,7 @@ function RecordTable({ records }: RecordTableProps) {
               <div>
                 {record.message === "" ? (
                   <div className="pt-2">
-                    <RevealMessage recordId={BigInt(1)} />
+                    <RevealAndClaim recordId={BigInt(record.id)} />
                   </div>
                 ) : (
                   <div className="pt-2">{record.message}</div>
@@ -442,7 +459,9 @@ function RecordTable({ records }: RecordTableProps) {
         <table className="w-full min-w-[360px] border-collapse hidden sm:table">
           <thead>
             <tr className="border-b border-gray-200">
+              <th className="text-left w-16 pl-3 py-2 opacity-60">ID</th>
               <th className="text-left w-16 pl-3 py-2 opacity-60">Author</th>
+              <th className="text-left w-16 pl-3 py-2 opacity-60">Revealer</th>
               <th className="text-right w-16 pl-2 pr-4 opacity-60">Hash</th>
               <th className="text-right pl-2 pr-2 opacity-60">Message</th>
             </tr>
@@ -450,19 +469,35 @@ function RecordTable({ records }: RecordTableProps) {
           <tbody>
             {records.map((record, index) => (
               <tr key={index} className="border-b border-gray-200">
+                <td className="text-center">{record.id}</td>
                 <td className="p-4">
                   <DisplayAddress address={record.msgAuthor} />
+                </td>
+                <td className="p-4">
+                  {record.msgRevealor === "0x" ? (
+                    <div className=" text-center">—</div>
+                  ) : (
+                    <DisplayAddress address={record.msgRevealor} />
+                  )}
                 </td>
                 <td className="flex justify-end p-4">
                   <DisplayHash hash={record.msgHashSha256} />
                 </td>
-                {record.message === "" ? (
-                  <td className="pr-2 text-right p-4">
-                    {showInput && <RevealMessage recordId={BigInt(1)} />}
-                  </td>
-                ) : (
-                  <td className="pr-2 text-right p-4">{record.message}</td>
-                )}
+                <td className="text-right">
+                  {record.message === "" &&
+                  BigInt(record.bounty) > BigInt(0) ? (
+                    <span
+                      className="cursor-pointer"
+                      title={`Bounty: ${formatEther(
+                        BigInt(record.bounty)
+                      )} eth`}
+                    >
+                      💰💰💰
+                    </span>
+                  ) : (
+                    record.message
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -471,54 +506,6 @@ function RecordTable({ records }: RecordTableProps) {
     </>
   );
 }
-
-const dummyRecords: Record[] = [
-  {
-    id: 1,
-    message: "Hello, this is message one",
-    msgHashSha256:
-      "a441b15fe9a3cf56661190a0b93b9dec7d04127288cc87250967cf3b52894d11",
-    msgAuthor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    msgRevealor: "0x0",
-    msgHashSignature: "signature1",
-  },
-  {
-    id: 2,
-    message: "Second message content",
-    msgHashSha256:
-      "a441b15fe9a3cf56661190a0b93b9dec7d04127288cc87250967cf3b52894d11",
-    msgAuthor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    msgRevealor: "0x0",
-    msgHashSignature: "signature2",
-  },
-  {
-    id: 3,
-    message: "Another example message",
-    msgHashSha256:
-      "a441b15fe9a3cf56661190a0b93b9dec7d04127288cc87250967cf3b52894d11",
-    msgAuthor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    msgRevealor: "0x0",
-    msgHashSignature: "signature3",
-  },
-  {
-    id: 4,
-    message: "",
-    msgHashSha256:
-      "a441b15fe9a3cf56661190a0b93b9dec7d04127288cc87250967cf3b52894d11",
-    msgAuthor: "0x45678",
-    msgRevealor: "0x0",
-    msgHashSignature: "signature4",
-  },
-  {
-    id: 5,
-    message: "Final dummy message",
-    msgHashSha256:
-      "a441b15fe9a3cf56661190a0b93b9dec7d04127288cc87250967cf3b52894d11",
-    msgAuthor: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    msgRevealor: "0x0",
-    msgHashSignature: "signature5",
-  },
-];
 
 function truncateAddress(address: Address, length: number = 4): string {
   return `${address.substring(0, length)}...${address.substring(
