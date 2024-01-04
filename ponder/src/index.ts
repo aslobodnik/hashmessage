@@ -11,21 +11,26 @@ ponder.on("ExampleContract:RecordAdded", async ({ event, context }) => {
       msgAuthor: event.args.msgAuthor,
       msgRevealor: "0x",
       msgHashSignature: event.args.msgHashSignature,
+      bounty: event.args.bounty.toString(),
     },
   });
 });
 
-ponder.on("ExampleContract:RevealMsg", async ({ event, context }) => {
-  const db = context.db.Record;
+ponder.on(
+  "ExampleContract:RevealAndClaimBounty",
+  async ({ event, context }) => {
+    const db = context.db.Record;
 
-  await db.update({
-    id: event.transaction.hash,
-    data: {
-      message: event.args.message,
-      //msgHashSha256: event.args.msgHashSha256,
-      //msgAuthor: event.args.msgAuthor,
-      msgRevealor: event.args.msgRevealor,
-      //msgHashSignature: event.args.msgHashSignature,
-    },
-  });
-});
+    await db.update({
+      id: event.transaction.hash,
+      data: {
+        message: event.args.message,
+        //msgHashSha256: event.args.msgHashSha256,
+        //msgAuthor: event.args.msgAuthor,
+        msgRevealor: event.args.msgRevealor,
+        bounty: "0",
+        //msgHashSignature: event.args.msgHashSignature,
+      },
+    });
+  }
+);
