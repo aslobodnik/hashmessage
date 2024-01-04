@@ -6,6 +6,8 @@ import {SignatureChecker} from "../lib/openzeppelin-contracts/contracts/utils/cr
 import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
 //todo: decide if i need sign the reveal message -- i think yes
+//todo: add optional deposit on add record
+//todo: add reward on reveal
 
 contract HashTruth {
     struct Record {
@@ -15,18 +17,21 @@ contract HashTruth {
         address msgAuthor;
         address msgRevealor;
         bytes msgHashSignature; //signature of the sha256 hash as string without 0x prefix
+        uint bounty; //optional amount of wei to be paid to revealor
     }
 
     event RecordAdded(
         uint indexed id,
         string msgHashSha256,
         address indexed msgAuthor,
-        bytes msgHashSignature
+        bytes msgHashSignature,
+        uint indexed bounty
     );
-    event RevealMsg(
+    event RevealAndClaimBounty(
         uint indexed id,
         string message,
-        address indexed msgRevealor
+        address indexed msgRevealor,
+        uint indexed bounty
     );
 
     mapping(string => bool) private hashExits; // Mapping to track used hashes
@@ -37,7 +42,7 @@ contract HashTruth {
     function addRecord(
         string memory _msgHashSha256,
         bytes memory _msgHashSignature
-    ) public {
+    ) public payable {
         require(!hashExits[_msgHashSha256], "Hash already exists.");
 
         bytes32 digest = keccak256(
@@ -65,7 +70,8 @@ contract HashTruth {
                 _msgHashSha256,
                 msg.sender, //msgAuthor
                 address(0), //msgRevealor
-                _msgHashSignature
+                _msgHashSignature,
+                msg.value // Store the sent Ether as the bounty
             )
         );
 
@@ -75,12 +81,16 @@ contract HashTruth {
             nextRecordId,
             _msgHashSha256,
             msg.sender,
-            _msgHashSignature
+            _msgHashSignature,
+            msg.value
         );
         nextRecordId++;
     }
 
-    function revealMsg(string memory _message, uint _recordId) public {
+    function revealAndClaimBounty(
+        string memory _message,
+        uint _recordId
+    ) public {
         require(_recordId < records.length, "Record does not exist.");
         Record storage record = records[_recordId];
 
@@ -90,15 +100,34 @@ contract HashTruth {
             "Message has already been revealed."
         );
 
-        // Convert string to bytes and hash the message using SHA-256
+        // Hash the message using SHA-256
         string memory _msgHashSha256 = hashString(_message);
 
-        if (Strings.equal(_msgHashSha256, record.msgHashSha256)) {
-            record.msgRevealor = msg.sender;
-            record.message = _message;
-            emit RevealMsg(_recordId, _message, msg.sender);
-        } else {
-            revert("Hash mismatch.");
+        // Check hash match
+        require(
+            Strings.equal(_msgHashSha256, record.msgHashSha256),
+            "Hash mismatch."
+        );
+
+        // Set revealor and message
+        record.msgRevealor = msg.sender;
+        record.message = _message;
+
+        // Emit reveal event
+        emit RevealAndClaimBounty(
+            _recordId,
+            _message,
+            msg.sender,
+            record.bounty
+        );
+
+        // Claim bounty logic
+        if (record.bounty > 0) {
+            uint amount = record.bounty;
+            record.bounty = 0; // Prevent re-entrancy
+
+            (bool success, ) = msg.sender.call{value: amount}("");
+            require(success, "Withdrawal failed.");
         }
     }
 
