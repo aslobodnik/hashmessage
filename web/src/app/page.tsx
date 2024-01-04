@@ -23,6 +23,7 @@ import {
 import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
 import { sha256 } from "@noble/hashes/sha256";
 import { isMatch } from "date-fns";
+import { usePonder } from "@/hooks/usePonder";
 
 //todo: componentize as much as you
 //todo: figure out how to import abi from foundry out without copying / pasting
@@ -63,6 +64,9 @@ export default function Home() {
   };
 
   const { isDisconnected } = useAccount();
+
+  const ponder = usePonder();
+  console.log({ ponder });
 
   useEffect(() => {
     if (recordCreationSuccess) {
