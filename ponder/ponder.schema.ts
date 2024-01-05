@@ -9,5 +9,6 @@ export default createSchema((p) => ({
     msgRevealor: p.bytes(),
     msgHashSignature: p.bytes(),
     bounty: p.string(),
+    originalBounty: p.string(),
   }),
 }));

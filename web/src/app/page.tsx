@@ -41,6 +41,7 @@ type Record = {
   msgRevealor: Address;
   msgHashSignature: string;
   bounty: string; // in ether
+  originalBounty: string;
 };
 
 type RecordTableProps = {

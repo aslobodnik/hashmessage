@@ -12,6 +12,7 @@ ponder.on("ExampleContract:RecordAdded", async ({ event, context }) => {
       msgRevealor: "0x",
       msgHashSignature: event.args.msgHashSignature,
       bounty: event.args.bounty.toString(),
+      originalBounty: event.args.bounty.toString(),
     },
   });
 });
@@ -22,7 +23,7 @@ ponder.on(
     const db = context.db.Record;
 
     await db.update({
-      id: event.transaction.hash,
+      id: event.args.id.toString(),
       data: {
         message: event.args.message,
         //msgHashSha256: event.args.msgHashSha256,

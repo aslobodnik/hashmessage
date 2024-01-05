@@ -37,6 +37,7 @@ export async function getRecrodById(id: number) {
             msgRevealor
             msgHashSignature
             bounty
+            originalBounty
           }
         }
       `,
