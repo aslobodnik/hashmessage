@@ -418,59 +418,71 @@ function RecordTable() {
       <div className="sm:w-4/5 mx-2 my-0 sm:mx-auto bg-white rounded-lg p-5 sm:min-w-[620px] h-fit">
         <div className="text-lg mb-4 font-semibold flex justify-between items-center w-full relative">
           <div className="flex-grow text-center">Messages</div>
-          <div className="flex absolute right-0">
+          {/* <div className="flex absolute right-0">
             <div className="  my-auto text-sm text-gray-500 pr-2">
               Show Input
             </div>
             <Toggle checked={showInput} onChange={handleToggle} size="small" />
-          </div>
+          </div> */}
         </div>
 
-        {/* Mobile View */}
+        {/* TODO: FIX Mobile View */}
         <div className="sm:hidden">
-          {records.map((record, index) => (
-            <div key={index} className="bg-gray-100 rounded-lg p-4 mb-4">
-              <div className="font-semibold">Author:</div>
-              <div className="mb-2 pt-2">
-                <ShortAddressDisplay address={record.msgAuthor} />
-              </div>
-              <div className="font-semibold">Hash:</div>
-              <div className="mb-2 pt-2">
-                {chunkHash(record.msgHashSha256, 32).map((chunk, index) => (
-                  <div className="font-mono" key={index}>
-                    {chunk}
-                  </div> // Added parentheses around parameters and key prop
-                ))}
-              </div>
-              <div className="font-semibold">Message:</div>
-              <div>
-                {record.message === "" ? (
-                  <div className="pt-2">
-                    <RevealAndClaim recordId={BigInt(record.id)} />
-                  </div>
-                ) : (
-                  <div className="pt-2">{record.message}</div>
-                )}
-              </div>
-            </div>
-          ))}
+          <table className="w-full border-collapse">
+            <tbody>
+              {records.map((record, index) => (
+                <tr key={index} className="bg-gray-100 rounded-lg mb-4">
+                  <td className="p-4">
+                    <div className="font-semibold">Author:</div>
+                    <div className="mb-2 pt-2">
+                      <ShortAddressDisplay address={record.msgAuthor} />
+                    </div>
+                    <div className="font-semibold">Hash:</div>
+                    <div className="mb-2 pt-2">
+                      {chunkHash(record.msgHashSha256, 32).map(
+                        (chunk, index) => (
+                          <div className="font-mono" key={index}>
+                            {chunk}
+                          </div>
+                        )
+                      )}
+                    </div>
+                    <div className="font-semibold">Message:</div>
+                    <div>
+                      {record.message === "" ? (
+                        <div className="pt-2">
+                          <RevealAndClaim recordId={BigInt(record.id)} />
+                        </div>
+                      ) : (
+                        <div className="pt-2">{record.message}</div>
+                      )}
+                    </div>
+                    {/* Add other fields as necessary, similar to the structure above */}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Desktop View */}
         <table className="w-full min-w-[360px] border-collapse hidden sm:table">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-left w-16 pl-3 py-2 opacity-60">ID</th>
-              <th className="text-left w-16 pl-3 py-2 opacity-60">Author</th>
-              <th className="text-left w-16 pl-3 py-2 opacity-60">Revealer</th>
+              <th className="text-center w-16 pl-3 opacity-60">Author</th>
+              <th className="text-center w-16 pl-3 opacity-60">Revealer</th>
               <th className="text-right w-16 pl-2 pr-4 opacity-60">Hash</th>
-              <th className="text-right pl-2 pr-2 opacity-60">Message</th>
+              <th className="text-right pl-2  opacity-60">Message</th>
+              <th className="text-left w-16 pl-3 py-2 opacity-60">
+                Bounty
+                <br />
+                <span className="text-center block">(eth)</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {records.map((record, index) => (
               <tr key={index} className="border-b border-gray-200">
-                <td className="text-center">{record.id}</td>
                 <td className="p-4">
                   <DisplayAddress address={record.msgAuthor} />
                 </td>
@@ -485,18 +497,15 @@ function RecordTable() {
                   <DisplayHash hash={record.msgHashSha256} />
                 </td>
                 <td className="text-right">
-                  {record.message === "" &&
-                  BigInt(record.bounty) > BigInt(0) ? (
-                    <span
-                      className="cursor-pointer"
-                      title={`Bounty: ${formatEther(
-                        BigInt(record.bounty)
-                      )} eth`}
-                    >
-                      💰💰💰
-                    </span>
+                  {record.message === "" ? "" : record.message}
+                </td>
+                <td className="text-center">
+                  {BigInt(record.bounty) > BigInt(0) ? (
+                    <div className=" text-center">
+                      {formatEther(BigInt(record.bounty))}
+                    </div>
                   ) : (
-                    record.message
+                    <div>—</div>
                   )}
                 </td>
               </tr>
