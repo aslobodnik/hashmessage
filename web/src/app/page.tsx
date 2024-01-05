@@ -23,6 +23,7 @@ import {
 import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
 import { sha256 } from "@noble/hashes/sha256";
 import { usePonder } from "@/hooks/usePonder";
+import { set } from "date-fns";
 
 //todo: componentize as much as you
 //todo: figure out how to import abi from foundry out without copying / pasting
@@ -70,6 +71,7 @@ export default function Home() {
       setTimeout(() => {
         setRecordCreationSuccess(false);
         setSecretMsg("");
+        setBounty("");
         setIsSigned(false);
       }, 5000);
       ``;
@@ -108,7 +110,7 @@ export default function Home() {
     setIsProcessingNewMessage(false); // Reset this flag when signing a message
     signMessage();
   };
-  console.log({ isSigned: isSigned, data: data });
+
   return (
     <main className="flex min-h-screen flex-col  max-w-3xl w-full mx-auto px-1">
       <NavBar />
@@ -201,7 +203,7 @@ export default function Home() {
           </div>
         </div>
         <div className="mb-4">
-          <RevealAndClaim recordId={BigInt(9)} />
+          <RevealAndClaim recordId={BigInt(10)} />
         </div>
       </div>
 
@@ -225,16 +227,20 @@ function AddRecord({
   onRecordCreationSuccess: (success: boolean) => void;
   bounty?: string;
 }) {
-  const { write, data, isLoading, error, isSuccess } = useContractWrite({
+  const { config } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
     abi: hashTruthABI.abi,
     functionName: "addRecord",
     args: [msgHashSha256, msgHashSignature],
     value: parseEther(bounty),
   });
+
+  const { write, data, isLoading, error, isSuccess } = useContractWrite(config);
   console.log({ bounty, value: parseEther(bounty) });
   const handleClick = () => {
-    write();
+    if (write) {
+      write();
+    }
   };
 
   useEffect(() => {
@@ -310,12 +316,17 @@ function RevealAndClaim({ recordId = BigInt(0) }: { recordId: bigint }) {
   // Prepare the contract write operation
   const { config } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
+    enabled: isMatch,
     abi: hashTruthABI.abi,
     functionName: "revealAndClaimBounty",
     args: [message, recordId],
   });
 
-  const { data, isError, isLoading } = useContractRead({
+  const {
+    data: recordData,
+    isError,
+    isLoading,
+  } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: [
       {
@@ -360,37 +371,26 @@ function RevealAndClaim({ recordId = BigInt(0) }: { recordId: bigint }) {
     }
   };
   useEffect(() => {
-    if (!isLoading && !isError && data) {
-      const recordSha256Msg = data[2];
+    if (!isLoading && !isError && recordData) {
+      const recordSha256Msg = recordData[2]; // msgHashSha256
       console.log({ recordSha256Msg, userSha256Msg, recordId });
       setIsMatch(recordSha256Msg === userSha256Msg);
     }
-  }, [data, isLoading, isError, userSha256Msg]);
+  }, [recordData, userSha256Msg]);
+  console.log({ isMatch });
   return (
-    <div>
-      <form onSubmit={handleSubmit} className="flex">
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Enter message"
-          className="border border-gray-300 rounded-md p-2 pr-5 w-full"
-        />
+    <div className="flex gap-4">
+      <Input
+        label="Reveal"
+        value={message}
+        placeholder="You said that!?"
+        onChange={(event) => setMessage(event.target.value)}
+        hideLabel={true}
+      />
 
-        <div className="-ml-5 flex my-auto">
-          {isMatch !== undefined &&
-            (isMatch ? (
-              <CheckCircleSVG className="text-green-600" />
-            ) : (
-              message && <CrossSVG className="text-red-300" />
-            ))}
-        </div>
-
-        {/* Button to submit the form and trigger the reveal */}
-        <button type="submit" className="ml-2 btn-primary">
-          Reveal Message
-        </button>
-      </form>
+      <Button width={BUTTON_WIDTH} onClick={handleSubmit}>
+        Reveal Message
+      </Button>
     </div>
   );
 }
@@ -405,7 +405,6 @@ function RecordTable() {
     return <div>Loading...</div>;
   }
 
-  // Use actual records from ponder
   const records = ponder.records || [];
   console.log({ records });
 
@@ -448,16 +447,7 @@ function RecordTable() {
                       )}
                     </div>
                     <div className="font-semibold">Message:</div>
-                    <div>
-                      {record.message === "" ? (
-                        <div className="pt-2">
-                          <RevealAndClaim recordId={BigInt(record.id)} />
-                        </div>
-                      ) : (
-                        <div className="pt-2">{record.message}</div>
-                      )}
-                    </div>
-                    {/* Add other fields as necessary, similar to the structure above */}
+                    <div>{record.message === "" ? "" : record.message}</div>
                   </td>
                 </tr>
               ))}
