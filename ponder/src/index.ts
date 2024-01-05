@@ -11,8 +11,8 @@ ponder.on("ExampleContract:RecordAdded", async ({ event, context }) => {
       msgAuthor: event.args.msgAuthor,
       msgRevealor: "0x",
       msgHashSignature: event.args.msgHashSignature,
-      bounty: event.args.bounty.toString(),
-      originalBounty: event.args.bounty.toString(),
+      bounty: event.args.bounty,
+      bountyClaimed: false,
     },
   });
 });
@@ -26,11 +26,8 @@ ponder.on(
       id: event.args.id.toString(),
       data: {
         message: event.args.message,
-        //msgHashSha256: event.args.msgHashSha256,
-        //msgAuthor: event.args.msgAuthor,
         msgRevealor: event.args.msgRevealor,
-        bounty: "0",
-        //msgHashSignature: event.args.msgHashSignature,
+        bountyClaimed: true,
       },
     });
   }

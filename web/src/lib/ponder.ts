@@ -15,6 +15,7 @@ export type Record = {
   msgRevealor: Address;
   msgHashSignature: string;
   bounty: string; // in ether
+  bountyClaimed: boolean;
 };
 
 export const ponderUrl = "http://localhost:42069";
@@ -37,7 +38,7 @@ export async function getRecrodById(id: number) {
             msgRevealor
             msgHashSignature
             bounty
-            originalBounty
+            bountyClaimed
           }
         }
       `,

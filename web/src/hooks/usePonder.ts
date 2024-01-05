@@ -18,7 +18,7 @@ export function usePonder() {
         msgRevealor
         msgHashSignature
         bounty
-        originalBounty
+        bountyClaimed
         
     }
   }
