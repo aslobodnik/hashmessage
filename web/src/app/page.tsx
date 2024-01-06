@@ -65,7 +65,7 @@ export default function Home() {
   };
 
   const { isDisconnected } = useAccount();
-
+  hashExists(sha256Msg);
   useEffect(() => {
     if (recordCreationSuccess) {
       setTimeout(() => {
@@ -517,6 +517,12 @@ function truncateHash(sha256Msg: string, length: number = 6): string {
   return `${sha256Msg.substring(0, length)}...${sha256Msg.substring(
     sha256Msg.length - length
   )}`;
+}
+
+function hashExists(hash: string): boolean {
+  const ponder = usePonder(hash);
+  console.log({ ponder });
+  return false;
 }
 
 // splits sha256 hash into chunks of 16 characters

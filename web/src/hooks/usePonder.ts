@@ -3,29 +3,34 @@ import { useState } from "react";
 import { useFetch } from "usehooks-ts";
 
 // Key is used to trigger a re-fetch
-export function usePonder() {
+export function usePonder(msgHashSha256?: string) {
   //export function usePonder(start: number = 0, owner?: string) {
   //const [skip, setSkip] = useState(start);
   const [cacheKey, setCacheKey] = useState("");
 
   const graphQlQuery = `
-  query RecordsQuery($first: Int!) {
-    records (orderBy: "id", orderDirection: "desc", first: $first) {
-        id
-        message
-        msgHashSha256
-        msgAuthor
-        msgRevealor
-        msgHashSignature
-        bounty
-        bountyClaimed
-        
+  query RecordsQuery($first: Int!, $msgHashSha256: String) {
+    records(
+      orderBy: "id",
+      orderDirection: "desc",
+      first: $first,
+      where: { msgHashSha256: $msgHashSha256 }
+    ) {
+      id
+      message
+      msgHashSha256
+      msgAuthor
+      msgRevealor
+      msgHashSignature
+      bounty
+      bountyClaimed
     }
   }
 `;
 
   const variables = {
     first: 1000, // set the value of 'first' here
+    msgHashSha256: msgHashSha256,
     // skip: start,
     // owner: owner,
   };
