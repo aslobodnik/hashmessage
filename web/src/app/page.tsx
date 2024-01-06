@@ -9,6 +9,7 @@ import {
   CrossSVG,
   Toggle,
   Checkbox,
+  UpCircleSVG,
 } from "@ensdomains/thorin";
 import { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
@@ -46,13 +47,14 @@ type Record = {
 };
 
 type RecordTableProps = {
-  records: Record[];
+  onRevealChange: (id: number) => void;
 };
 
 export default function Home() {
   const [secretMsg, setSecretMsg] = useState("");
   const [hashedMsg, setHashedMsg] = useState("");
   const [sha256Msg, setSha256Msg] = useState("");
+  const [isDupeMsg, setIsDupeMsg] = useState(false);
   const [bounty, setBounty] = useState("");
   const [isSigned, setIsSigned] = useState(false);
   const [isBountyChecked, setIsBountyChecked] = useState(false);
@@ -64,8 +66,14 @@ export default function Home() {
     setRecordCreationSuccess(success);
   };
 
+  const [revealRecordId, setRevealRecordId] = useState<number>();
+
+  function handleRevealChange(id: number) {
+    setRevealRecordId(id);
+  }
+
   const { isDisconnected } = useAccount();
-  hashExists(sha256Msg);
+
   useEffect(() => {
     if (recordCreationSuccess) {
       setTimeout(() => {
@@ -135,7 +143,7 @@ export default function Home() {
                 onChange={(event) => {
                   const value = event.target.value;
                   const decimalRegex = /^[0-9]*\.?[0-9]*$/;
-                  const numValue = parseFloat(value);
+                  // const numValue = parseFloat(value);
 
                   // Ensure the value is a decimal
                   if (decimalRegex.test(value)) {
@@ -180,10 +188,12 @@ export default function Home() {
             {!isSigned && (
               <Button
                 onClick={handleSigning}
-                disabled={isDisconnected}
+                disabled={isDisconnected || isDupeMsg}
                 width={BUTTON_WIDTH}
               >
-                {isDisconnected
+                {isDupeMsg
+                  ? "Dupe"
+                  : isDisconnected
                   ? "Connect Wallet"
                   : isLoading
                   ? "Signing..."
@@ -203,12 +213,14 @@ export default function Home() {
           </div>
         </div>
         <div className="mb-4">
-          <RevealAndClaim recordId={BigInt(10)} />
+          {revealRecordId !== undefined && (
+            <RevealAndClaim recordId={BigInt(revealRecordId)} />
+          )}
         </div>
       </div>
 
       <div>
-        <RecordTable />
+        <RecordTable onRevealChange={handleRevealChange} />
       </div>
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <ViewRecordCount />
@@ -227,7 +239,7 @@ function AddRecord({
   onRecordCreationSuccess: (success: boolean) => void;
   bounty?: string;
 }) {
-  const { config } = usePrepareContractWrite({
+  const { config, status } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
     abi: hashTruthABI.abi,
     functionName: "addRecord",
@@ -236,7 +248,7 @@ function AddRecord({
   });
 
   const { write, data, isLoading, error, isSuccess } = useContractWrite(config);
-  console.log({ bounty, value: parseEther(bounty) });
+
   const handleClick = () => {
     if (write) {
       write();
@@ -254,10 +266,10 @@ function AddRecord({
     <>
       <Button
         onClick={handleClick}
-        disabled={msgHashSignature === undefined}
+        disabled={msgHashSignature === undefined || status === "error"}
         width={BUTTON_WIDTH}
       >
-        Create
+        {status === "error" ? "Dupe Message" : "Create"}
       </Button>
     </>
   );
@@ -300,7 +312,7 @@ const ViewRecordCount = () => {
   );
 };
 
-function RevealAndClaim({ recordId = BigInt(0) }: { recordId: bigint }) {
+function RevealAndClaim({ recordId }: { recordId: bigint }) {
   const [message, setMessage] = useState("");
   const [userSha256Msg, setUserSha256Msg] = useState("");
   const [isMatch, setIsMatch] = useState<boolean>();
@@ -373,32 +385,53 @@ function RevealAndClaim({ recordId = BigInt(0) }: { recordId: bigint }) {
   useEffect(() => {
     if (!isLoading && !isError && recordData) {
       const recordSha256Msg = recordData[2]; // msgHashSha256
-      console.log({ recordSha256Msg, userSha256Msg, recordId });
+
       setIsMatch(recordSha256Msg === userSha256Msg);
     }
   }, [recordData, userSha256Msg]);
-  console.log({ isMatch });
+
   return (
     <div className="flex gap-4">
-      <Input
-        label="Reveal"
-        value={message}
-        placeholder="You said that!?"
-        onChange={(event) => setMessage(event.target.value)}
-        hideLabel={true}
-      />
-
-      <Button width={BUTTON_WIDTH} onClick={handleSubmit}>
+      <div className="w-[342.25px] relative">
+        <Input
+          label="Reveal"
+          value={message}
+          placeholder="Predication"
+          onChange={(event) => setMessage(event.target.value)}
+          hideLabel={true}
+          className="mr-2"
+          autoFocus
+        />
+        {message !== "" &&
+          (isMatch ? (
+            <div className="absolute right-2 top-4 text-green-500">
+              <CheckCircleSVG />
+            </div>
+          ) : (
+            <div className="absolute right-2 top-4 text-red-400">
+              <CrossSVG />
+            </div>
+          ))}
+      </div>
+      <Button width={BUTTON_WIDTH} disabled={!isMatch} onClick={handleSubmit}>
         Reveal Message
       </Button>
     </div>
   );
 }
 
-function RecordTable() {
+function RecordTable({ onRevealChange }: RecordTableProps) {
   const [showInput, setShowInput] = useState<boolean>(false);
+  const [revealRecordId, setRevealRecordId] = useState<number | undefined>(
+    undefined
+  );
 
   const ponder = usePonder();
+
+  const handleRevealChange = (id: number) => {
+    onRevealChange(id);
+    setRevealRecordId(id);
+  };
 
   // Handle loading state
   if (ponder.isLoading) {
@@ -406,11 +439,9 @@ function RecordTable() {
   }
 
   const records = ponder.records || [];
-  console.log({ records });
 
   const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setShowInput(event.target.checked);
-    console.log("toggle", event.target.checked);
   };
   return (
     <>
@@ -472,7 +503,14 @@ function RecordTable() {
           </thead>
           <tbody>
             {records.map((record, index) => (
-              <tr key={index} className="border-b border-gray-200">
+              <tr
+                key={index}
+                className={` ${
+                  revealRecordId === record.id
+                    ? " ring-2 rounded-lg"
+                    : "border-b  border-gray-200"
+                }`}
+              >
                 <td className="p-4">
                   <DisplayAddress address={record.msgAuthor} />
                 </td>
@@ -487,7 +525,16 @@ function RecordTable() {
                   <DisplayHash hash={record.msgHashSha256} />
                 </td>
                 <td className="text-right">
-                  {record.message === "" ? "" : record.message}
+                  {record.message === "" ? (
+                    <div
+                      onClick={() => handleRevealChange(record.id)}
+                      className="flex justify-center  text-yellow-400 cursor-pointer"
+                    >
+                      <UpCircleSVG />
+                    </div>
+                  ) : (
+                    record.message
+                  )}
                 </td>
                 <td className="text-center">
                   {BigInt(record.bounty) > BigInt(0) ? (
@@ -521,7 +568,7 @@ function truncateHash(sha256Msg: string, length: number = 6): string {
 
 function hashExists(hash: string): boolean {
   const ponder = usePonder(hash);
-  console.log({ ponder });
+
   return false;
 }
 
