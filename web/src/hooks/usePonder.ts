@@ -12,7 +12,7 @@ export function usePonder(msgHashSha256?: string) {
   query RecordsQuery($first: Int!, $msgHashSha256: String) {
     records(
       orderBy: "id",
-      orderDirection: "desc",
+      orderDirection: "asc",
       first: $first,
       where: { msgHashSha256: $msgHashSha256 }
     ) {
@@ -24,6 +24,7 @@ export function usePonder(msgHashSha256?: string) {
       msgHashSignature
       bounty
       bountyClaimed
+      block
     }
   }
 `;

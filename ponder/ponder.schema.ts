@@ -2,7 +2,7 @@ import { createSchema } from "@ponder/core";
 
 export default createSchema((p) => ({
   Record: p.createTable({
-    id: p.string(),
+    id: p.bigint(),
     message: p.string(),
     msgHashSha256: p.string(),
     msgAuthor: p.bytes(),
@@ -10,5 +10,6 @@ export default createSchema((p) => ({
     msgHashSignature: p.bytes(),
     bounty: p.bigint(),
     bountyClaimed: p.boolean(),
+    block: p.bigint(),
   }),
 }));

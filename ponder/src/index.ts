@@ -4,7 +4,7 @@ ponder.on("ExampleContract:RecordAdded", async ({ event, context }) => {
   const db = context.db.Record;
 
   await db.create({
-    id: event.args.id.toString(),
+    id: event.args.id,
     data: {
       message: "",
       msgHashSha256: event.args.msgHashSha256,
@@ -13,6 +13,7 @@ ponder.on("ExampleContract:RecordAdded", async ({ event, context }) => {
       msgHashSignature: event.args.msgHashSignature,
       bounty: event.args.bounty,
       bountyClaimed: false,
+      block: event.block.number,
     },
   });
 });
@@ -23,7 +24,7 @@ ponder.on(
     const db = context.db.Record;
 
     await db.update({
-      id: event.args.id.toString(),
+      id: event.args.id,
       data: {
         message: event.args.message,
         msgRevealor: event.args.msgRevealor,

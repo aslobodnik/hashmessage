@@ -16,6 +16,7 @@ export type Record = {
   msgHashSignature: string;
   bounty: string; // in ether
   bountyClaimed: boolean;
+  block: number;
 };
 
 export const ponderUrl = "http://localhost:42069";
