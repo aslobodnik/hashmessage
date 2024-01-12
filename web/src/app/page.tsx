@@ -35,16 +35,17 @@ import { set } from "date-fns";
 const CONTRACT_ADDRESS = "0x0B306BF915C4d645ff596e518fAf3F9669b97016";
 const BUTTON_WIDTH = "40";
 
-type Record = {
-  id: number;
-  message: string;
-  msgHashSha256: string;
-  msgAuthor: Address;
-  msgRevealor: Address;
-  msgHashSignature: string;
-  bounty: string; // in ether
-  bountyClaimed: boolean;
-};
+// type Record = {
+//   id: number;
+//   message: string;
+//   msgHashSha256: string;
+//   msgAuthor: Address;
+//   msgRevealor: Address;
+//   msgHashSignature: string;
+//   bounty: string; // in ether
+//   bountyClaimed: boolean;
+//   block: number;
+// };
 
 type RecordTableProps = {
   onRevealChange: (id: number) => void;
@@ -212,9 +213,19 @@ export default function Home() {
             )}
           </div>
         </div>
-        <div className="mb-4">
-          {revealRecordId !== undefined && (
+        <div className="mb-4 h-12 relative">
+          {revealRecordId !== undefined ? (
             <RevealAndClaim recordId={BigInt(revealRecordId)} />
+          ) : (
+            <>
+              <div className="blur-sm">
+                <RevealAndClaim recordId={BigInt(0)} />
+              </div>
+              <div
+                className="absolute inset-0 cursor-pointer"
+                style={{ backgroundColor: "transparent" }}
+              ></div>
+            </>
           )}
         </div>
       </div>
@@ -303,6 +314,7 @@ const ViewRecordCount = () => {
     abi: hashTruthABI.abi,
     functionName: "getRecordsCount",
   });
+
   const displayData = data ? data.toString() : "No data";
 
   return (
@@ -315,7 +327,7 @@ const ViewRecordCount = () => {
 function RevealAndClaim({ recordId }: { recordId: bigint }) {
   const [message, setMessage] = useState("");
   const [userSha256Msg, setUserSha256Msg] = useState("");
-  const [isMatch, setIsMatch] = useState<boolean>();
+  const [isMatch, setIsMatch] = useState<boolean>(Number(recordId) !== 0);
 
   useEffect(() => {
     const hashArray = sha256(message);
@@ -400,7 +412,7 @@ function RevealAndClaim({ recordId }: { recordId: bigint }) {
           onChange={(event) => setMessage(event.target.value)}
           hideLabel={true}
           className="mr-2"
-          autoFocus
+          autoFocus //TODO: autofocus should not appear when record id is 0
         />
         {message !== "" &&
           (isMatch ? (
@@ -511,8 +523,11 @@ function RecordTable({ onRevealChange }: RecordTableProps) {
                     : "border-b  border-gray-200"
                 }`}
               >
-                <td className="p-4">
-                  <DisplayAddress address={record.msgAuthor} />
+                <td className="p-4 relative">
+                  <span className="absolute inset-x-0 bottom-1   text-ss text-gray-400 flex justify-center">
+                    {(record.block * 10000).toLocaleString()}
+                  </span>
+                  <DisplayAddress address={record.msgAuthor} />{" "}
                 </td>
                 <td className="p-4">
                   {record.msgRevealor === "0x" ? (
