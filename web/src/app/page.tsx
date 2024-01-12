@@ -7,13 +7,11 @@ import {
   CheckSVG,
   CheckCircleSVG,
   CrossSVG,
-  Toggle,
   Checkbox,
   UpCircleSVG,
 } from "@ensdomains/thorin";
 import { useState, useEffect } from "react";
 import NavBar from "./components/NavBar";
-//import DisplayHash from "./components/DisplayHash";
 import {
   useSignMessage,
   useContractRead,
@@ -24,36 +22,16 @@ import {
 import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
 import { sha256 } from "@noble/hashes/sha256";
 import { usePonder } from "@/hooks/usePonder";
-import { set } from "date-fns";
-
-//todo: componentize as much as you
-//todo: figure out how to import abi from foundry out without copying / pasting
-//todo: redesign page to be cleaner -- show signature and hash in table
-//todo: success message
-//todo: reset state after success
 
 const CONTRACT_ADDRESS = "0x0B306BF915C4d645ff596e518fAf3F9669b97016";
 const BUTTON_WIDTH = "40";
-
-// type Record = {
-//   id: number;
-//   message: string;
-//   msgHashSha256: string;
-//   msgAuthor: Address;
-//   msgRevealor: Address;
-//   msgHashSignature: string;
-//   bounty: string; // in ether
-//   bountyClaimed: boolean;
-//   block: number;
-// };
 
 type RecordTableProps = {
   onRevealChange: (id: number) => void;
 };
 
 export default function Home() {
-  const [secretMsg, setSecretMsg] = useState("");
-  const [hashedMsg, setHashedMsg] = useState("");
+  const [secretMsg, setSecretMsg] = useState(""); // The message the user inputs
   const [sha256Msg, setSha256Msg] = useState("");
   const [isDupeMsg, setIsDupeMsg] = useState(false);
   const [bounty, setBounty] = useState("");
@@ -92,17 +70,11 @@ export default function Home() {
   });
 
   useEffect(() => {
-    const hash = keccak256(
-      toHex("\x19Ethereum Signed Message:\n" + sha256Msg.length + sha256Msg)
-    );
-    setHashedMsg(hash);
-  }, [sha256Msg]);
-
-  useEffect(() => {
     const hashArray = sha256(secretMsg);
     const hashHex = Array.from(hashArray)
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
+
     setSha256Msg(hashHex);
 
     setIsSigned(false); // Reset isSigned when secretMsg changes
@@ -229,7 +201,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
       <div>
         <RecordTable onRevealChange={handleRevealChange} />
       </div>
@@ -433,7 +404,6 @@ function RevealAndClaim({ recordId }: { recordId: bigint }) {
 }
 
 function RecordTable({ onRevealChange }: RecordTableProps) {
-  const [showInput, setShowInput] = useState<boolean>(false);
   const [revealRecordId, setRevealRecordId] = useState<number | undefined>(
     undefined
   );
@@ -452,22 +422,12 @@ function RecordTable({ onRevealChange }: RecordTableProps) {
 
   const records = ponder.records || [];
 
-  const handleToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setShowInput(event.target.checked);
-  };
   return (
     <>
       <div className="sm:w-4/5 mx-2 my-0 sm:mx-auto bg-white rounded-lg p-5 sm:min-w-[620px] h-fit">
         <div className="text-lg mb-4 font-semibold flex justify-between items-center w-full relative">
           <div className="flex-grow text-center">Messages</div>
-          {/* <div className="flex absolute right-0">
-            <div className="  my-auto text-sm text-gray-500 pr-2">
-              Show Input
-            </div>
-            <Toggle checked={showInput} onChange={handleToggle} size="small" />
-          </div> */}
         </div>
-
         {/* TODO: FIX Mobile View */}
         <div className="sm:hidden">
           <table className="w-full border-collapse">
