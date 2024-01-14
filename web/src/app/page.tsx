@@ -433,7 +433,17 @@ function RecordTable({ onRevealChange }: RecordTableProps) {
           <table className="w-full border-collapse">
             <tbody>
               {records.map((record, index) => (
-                <tr key={index} className="bg-gray-100 rounded-lg mb-4">
+                <tr
+                  key={index}
+                  // className="bg-gray-100 mb-6 border-8 border-white"
+                  className={` ${
+                    revealRecordId === record.id
+                      ? " "
+                      : "bg-gray-100 border-4 border-white"
+                  }`}
+                >
+                  {" "}
+                  {/* Adjusted mb-4 to mb-6 for more space */}
                   <td className="p-4">
                     <div className="font-semibold">Author:</div>
                     <div className="mb-2 pt-2">
@@ -450,7 +460,28 @@ function RecordTable({ onRevealChange }: RecordTableProps) {
                       )}
                     </div>
                     <div className="font-semibold">Message:</div>
-                    <div>{record.message === "" ? "" : record.message}</div>
+
+                    <div className="text-left">
+                      {record.message === "" ? (
+                        <div
+                          className={`flex gap-4 mt-2 ${
+                            revealRecordId === record.id
+                              ? " border-2 border-green-200 border-dashed rounded-lg p-2"
+                              : " "
+                          }`}
+                        >
+                          Reveal
+                          <div
+                            onClick={() => handleRevealChange(record.id)}
+                            className="flex justify-center mt-1 text-yellow-400 cursor-pointer"
+                          >
+                            <UpCircleSVG />
+                          </div>
+                        </div>
+                      ) : (
+                        record.message
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
