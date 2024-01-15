@@ -194,7 +194,7 @@ export default function Home() {
             )}
           </div>
         </div>
-        <div className="mb-4 h-12 relative">
+        <div className="mb-4  relative">
           {revealRecordId !== undefined ? (
             <RevealAndClaim
               recordId={BigInt(revealRecordId)}
@@ -380,6 +380,7 @@ function RevealAndClaim({
     data: revealData,
     isError: revealIsError,
     isLoading: revealIsLoading,
+    isSuccess: revealIsSuccess,
   } = useContractWrite(config);
 
   // Function to handle form submission
@@ -400,31 +401,37 @@ function RevealAndClaim({
   }, [recordData, userSha256Msg]);
 
   return (
-    <div className="flex gap-4">
-      <div className="w-[342.25px] relative">
-        <Input
-          label="Reveal"
-          value={message}
-          placeholder="Predication"
-          onChange={(event) => setMessage(event.target.value)}
-          hideLabel={true}
-          className="mr-2"
-          autoFocus //TODO: autofocus should not appear when record id is 0
-        />
-        {message !== "" &&
-          (isMatch ? (
-            <div className="absolute right-2 top-4 text-green-500">
-              <CheckCircleSVG />
-            </div>
-          ) : (
-            <div className="absolute right-2 top-4 text-red-400">
-              <CrossSVG />
-            </div>
-          ))}
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-4">
+        <div className="w-[342.25px] relative">
+          <Input
+            label="Reveal"
+            value={message}
+            placeholder="Predication"
+            onChange={(event) => setMessage(event.target.value)}
+            hideLabel={true}
+            className="mr-2"
+            autoFocus //TODO: autofocus should not appear when record id is 0
+          />
+          {message !== "" &&
+            (isMatch ? (
+              <div className="absolute right-2 top-4 text-green-500">
+                <CheckCircleSVG />
+              </div>
+            ) : (
+              <div className="absolute right-2 top-4 text-red-400">
+                <CrossSVG />
+              </div>
+            ))}
+        </div>
+        <Button width={BUTTON_WIDTH} disabled={!isMatch} onClick={handleSubmit}>
+          Reveal Message
+        </Button>
       </div>
-      <Button width={BUTTON_WIDTH} disabled={!isMatch} onClick={handleSubmit}>
-        Reveal Message
-      </Button>
+      <div className=" text-center">
+        {" "}
+        {revealIsSuccess && <div> 🎉 Success 🎉 | Refresh</div>}
+      </div>
     </div>
   );
 }
@@ -535,7 +542,7 @@ function RecordTable({ onRevealChange, records }: RecordTableProps) {
               >
                 <td className="p-4 relative">
                   <span className="absolute inset-x-0 bottom-1   text-ss text-gray-400 flex justify-center">
-                    {(record.block * 10000).toLocaleString()}
+                    {Number(record.block).toLocaleString()}
                   </span>
                   <DisplayAddress address={record.msgAuthor} />{" "}
                 </td>
