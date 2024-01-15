@@ -19,7 +19,7 @@ export type Record = {
   block: number;
 };
 
-export const ponderUrl = "http://localhost:42069";
+export const ponderUrl = "https://hashmessage-production.up.railway.app";
 //export const ponderUrl = "https://sepolia.base.org";
 
 export async function getRecrodById(id: number) {
