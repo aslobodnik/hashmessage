@@ -7,8 +7,8 @@ import { ClientProviders } from "@/lib/providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Hash Message",
-  description: "It was said",
+  title: "Testifi",
+  description: "Sha256 any message",
 };
 
 export default function RootLayout({

@@ -428,7 +428,7 @@ function RecordTable({ onRevealChange }: RecordTableProps) {
         <div className="text-lg mb-4 font-semibold flex justify-between items-center w-full relative">
           <div className="flex-grow text-center">Messages</div>
         </div>
-        {/* TODO: FIX Mobile View */}
+        {/*Mobile View */}
         <div className="sm:hidden">
           <table className="w-full border-collapse">
             <tbody>
