@@ -16,9 +16,6 @@ interface AbiItem {
 // Define the type for the ABI array
 type Abi = AbiItem[];
 
-// Import the ABI from the JSON file
-import testifiAbiJson from "../../../contracts/out/Testifi.sol/Testifi.json";
-
 const testifiAbi: Abi = [
   {
     type: "function",
