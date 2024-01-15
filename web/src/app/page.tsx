@@ -19,7 +19,8 @@ import {
   usePrepareContractWrite,
   useAccount,
 } from "wagmi";
-import testifiABI from "../../../contracts/out/Testifi.sol/Testifi.json";
+//import testifiABI from "../../../contracts/out/Testifi.sol/Testifi.json";
+import testifiAbi from "@/lib/abi";
 import { sha256 } from "@noble/hashes/sha256";
 import { usePonder } from "@/hooks/usePonder";
 import { Record } from "@/lib/ponder";
@@ -241,7 +242,7 @@ function AddRecord({
 }) {
   const { config, status } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
-    abi: testifiABI.abi,
+    abi: testifiAbi,
     functionName: "addRecord",
     args: [msgHashSha256, msgHashSignature],
     value: parseEther(bounty),
@@ -300,7 +301,7 @@ function HashDisplay({ hash }: { hash: string }) {
 const ViewRecordCount = () => {
   const { data, isError, isLoading } = useContractRead({
     address: CONTRACT_ADDRESS,
-    abi: testifiABI.abi,
+    abi: testifiAbi,
     functionName: "getRecordsCount",
   });
 
@@ -337,7 +338,7 @@ function RevealAndClaim({
   const { config } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
     enabled: isMatch,
-    abi: testifiABI.abi,
+    abi: testifiAbi,
     functionName: "revealAndClaimBounty",
     args: [message, recordId],
   });
