@@ -4,11 +4,11 @@ pragma solidity ^0.8.19;
 import {Test, console2} from "forge-std/Test.sol";
 import "forge-std/Vm.sol";
 import "forge-std/console.sol";
-import {HashTruth} from "../src/HashTruth.sol";
+import {Testifi} from "../src/Testifi.sol";
 import "../lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
-contract HashTruthTest is Test {
-    HashTruth hashTruth;
+contract TestifiTest is Test {
+    Testifi testifi;
 
     uint256 internal privateKey1;
     uint256 internal privateKey2;
@@ -32,7 +32,7 @@ contract HashTruthTest is Test {
     );
 
     function setUp() public {
-        hashTruth = new HashTruth();
+        testifi = new Testifi();
         privateKey1 = 0xabc;
         privateKey2 = 0x123;
         user1 = vm.addr(privateKey1);
@@ -54,7 +54,7 @@ contract HashTruthTest is Test {
 
     function testAddRecord() public {
         vm.prank(user1);
-        hashTruth.addRecord(
+        testifi.addRecord(
             "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
             signature
         );
@@ -63,11 +63,11 @@ contract HashTruthTest is Test {
 
     function testFailDupeHashRecord() public {
         vm.prank(user1);
-        hashTruth.addRecord(
+        testifi.addRecord(
             "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
             signature
         );
-        hashTruth.addRecord(
+        testifi.addRecord(
             "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
             signature
         );
@@ -76,7 +76,7 @@ contract HashTruthTest is Test {
 
     function testValidateAddRecord() public {
         vm.prank(user1);
-        hashTruth.addRecord(
+        testifi.addRecord(
             "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
             signature
         );
@@ -91,7 +91,7 @@ contract HashTruthTest is Test {
             address msgRevealor,
             bytes memory msgHashSignature,
             uint bounty
-        ) = hashTruth.records(0);
+        ) = testifi.records(0);
 
         assertEq(id, 0);
         assertEq(message, ""); //message is blank until revealed
@@ -112,7 +112,7 @@ contract HashTruthTest is Test {
         // Adding a record with a bounty
         vm.prank(user1);
         vm.deal(user1, 1 ether);
-        hashTruth.addRecord{value: 1 ether}(
+        testifi.addRecord{value: 1 ether}(
             "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
             signature
         );
@@ -122,7 +122,7 @@ contract HashTruthTest is Test {
         string memory testMessage = "test";
         string memory testHash = hashString(testMessage);
         vm.prank(user2);
-        hashTruth.revealAndClaimBounty(testMessage, 0);
+        testifi.revealAndClaimBounty(testMessage, 0);
         vm.stopPrank();
 
         // Deconstruct the struct fields from the getter
@@ -134,7 +134,7 @@ contract HashTruthTest is Test {
             address msgRevealor,
             bytes memory msgHashSignature,
             uint bounty
-        ) = hashTruth.records(0);
+        ) = testifi.records(0);
 
         // Assertions
         assertEq(id, 0);
@@ -178,7 +178,7 @@ contract HashTruthTest is Test {
 //             0
 //         );
 //         vm.prank(user1);
-//         hashTruth.addRecord(
+//         testifi.addRecord(
 //             "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
 //             signature
 //         );
@@ -187,7 +187,7 @@ contract HashTruthTest is Test {
 
 //     function testEmitRevealAndClaimBounty() public {
 //         vm.prank(user1);
-//         hashTruth.addRecord(
+//         testifi.addRecord(
 //             "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
 //             signature
 //         );
@@ -196,7 +196,7 @@ contract HashTruthTest is Test {
 //         vm.expectEmit(true, false, true, true);
 //         emit RevealAndClaimBounty(0, "test", user2);
 
-//         hashTruth.revealAndClaimBounty("test", 0);
+//         testifi.revealAndClaimBounty("test", 0);
 //         vm.stopPrank();
 //     }
 // }

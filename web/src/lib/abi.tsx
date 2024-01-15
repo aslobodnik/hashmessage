@@ -12,10 +12,10 @@ interface AbiItem {
 type Abi = AbiItem[];
 
 // Import the ABI from the JSON file
-import hashTruthAbiJson from "../../../contracts/out/HashTruth.sol/HashTruth.json";
+import testifiAbiJson from "../../../contracts/out/Testifi.sol/Testifi.json";
 
 // Cast the imported ABI to the Abi type
-const hashTruthAbi: Abi = hashTruthAbiJson.abi as Abi;
+const testifiAbi: Abi = testifiAbiJson.abi as Abi;
 
 // Export the typed ABI for use in other parts of your application
-export default hashTruthAbi;
+export default testifiAbi;

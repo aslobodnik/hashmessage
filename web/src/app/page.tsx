@@ -19,11 +19,11 @@ import {
   usePrepareContractWrite,
   useAccount,
 } from "wagmi";
-import hashTruthABI from "../../../contracts/out/HashTruth.sol/HashTruth.json";
+import testifiABI from "../../../contracts/out/Testifi.sol/Testifi.json";
 import { sha256 } from "@noble/hashes/sha256";
 import { usePonder } from "@/hooks/usePonder";
 
-const CONTRACT_ADDRESS = "0x0B306BF915C4d645ff596e518fAf3F9669b97016";
+const CONTRACT_ADDRESS = "0x09635F643e140090A9A8Dcd712eD6285858ceBef";
 const BUTTON_WIDTH = "40";
 
 type RecordTableProps = {
@@ -223,7 +223,7 @@ function AddRecord({
 }) {
   const { config, status } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
-    abi: hashTruthABI.abi,
+    abi: testifiABI.abi,
     functionName: "addRecord",
     args: [msgHashSha256, msgHashSignature],
     value: parseEther(bounty),
@@ -282,7 +282,7 @@ function HashDisplay({ hash }: { hash: string }) {
 const ViewRecordCount = () => {
   const { data, isError, isLoading } = useContractRead({
     address: CONTRACT_ADDRESS,
-    abi: hashTruthABI.abi,
+    abi: testifiABI.abi,
     functionName: "getRecordsCount",
   });
 
@@ -312,7 +312,7 @@ function RevealAndClaim({ recordId }: { recordId: bigint }) {
   const { config } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
     enabled: isMatch,
-    abi: hashTruthABI.abi,
+    abi: testifiABI.abi,
     functionName: "revealAndClaimBounty",
     args: [message, recordId],
   });
