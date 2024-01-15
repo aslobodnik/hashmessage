@@ -22,15 +22,18 @@ import {
 import testifiABI from "../../../contracts/out/Testifi.sol/Testifi.json";
 import { sha256 } from "@noble/hashes/sha256";
 import { usePonder } from "@/hooks/usePonder";
+import { Record } from "@/lib/ponder";
 
 const CONTRACT_ADDRESS = "0x09635F643e140090A9A8Dcd712eD6285858ceBef";
 const BUTTON_WIDTH = "40";
 
 type RecordTableProps = {
   onRevealChange: (id: number) => void;
+  records: Record[];
 };
 
 export default function Home() {
+  const ponder = usePonder();
   const [secretMsg, setSecretMsg] = useState(""); // The message the user inputs
   const [sha256Msg, setSha256Msg] = useState("");
   const [isDupeMsg, setIsDupeMsg] = useState(false);
@@ -60,6 +63,7 @@ export default function Home() {
         setSecretMsg("");
         setBounty("");
         setIsSigned(false);
+        ponder.refetch();
       }, 5000);
       ``;
     }
@@ -98,6 +102,7 @@ export default function Home() {
       <h1 className="text-2xl font-bold text-center mb-4 opacity-80">
         TestiFi
       </h1>
+
       <div className="sm:px-16 px-4  flex-col ml-1">
         <div className="flex">
           <Input
@@ -202,7 +207,10 @@ export default function Home() {
         </div>
       </div>
       <div>
-        <RecordTable onRevealChange={handleRevealChange} />
+        <RecordTable
+          onRevealChange={handleRevealChange}
+          records={ponder.records || []}
+        />
       </div>
       <div className="max-w-sm pb-4 w-full sm:w-1/2 mx-auto">
         <ViewRecordCount />
@@ -403,7 +411,7 @@ function RevealAndClaim({ recordId }: { recordId: bigint }) {
   );
 }
 
-function RecordTable({ onRevealChange }: RecordTableProps) {
+function RecordTable({ onRevealChange, records }: RecordTableProps) {
   const [revealRecordId, setRevealRecordId] = useState<number | undefined>(
     undefined
   );
@@ -416,11 +424,11 @@ function RecordTable({ onRevealChange }: RecordTableProps) {
   };
 
   // Handle loading state
-  if (ponder.isLoading) {
-    return <div>Loading...</div>;
-  }
+  // if (ponder.isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
-  const records = ponder.records || [];
+  //const records = ponder.records || [];
 
   return (
     <>
