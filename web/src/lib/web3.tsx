@@ -3,7 +3,7 @@ import { configureChains, createConfig } from "wagmi";
 import { base, baseSepolia, localhost } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 
-export const chains = [base, localhost, baseSepolia];
+export const chains = [localhost, baseSepolia];
 
 export const { publicClient, webSocketPublicClient } = configureChains(chains, [
   publicProvider(),
