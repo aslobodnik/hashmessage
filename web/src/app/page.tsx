@@ -10,7 +10,7 @@ import {
   Checkbox,
   UpCircleSVG,
 } from "@ensdomains/thorin";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import NavBar from "./components/NavBar";
 import {
   useSignMessage,
@@ -24,7 +24,7 @@ import { sha256 } from "@noble/hashes/sha256";
 import { usePonder } from "@/hooks/usePonder";
 import { Record } from "@/lib/ponder";
 
-const CONTRACT_ADDRESS = "0x09635F643e140090A9A8Dcd712eD6285858ceBef";
+const CONTRACT_ADDRESS = "0xc6a83d8840e0C01A7B7071B268214e3559b3973C";
 const BUTTON_WIDTH = "40";
 
 type RecordTableProps = {
@@ -55,6 +55,10 @@ export default function Home() {
   }
 
   const { isDisconnected } = useAccount();
+
+  const handleRevealSuccess = () => {
+    ponder.refetch();
+  };
 
   useEffect(() => {
     if (recordCreationSuccess) {
@@ -192,11 +196,17 @@ export default function Home() {
         </div>
         <div className="mb-4 h-12 relative">
           {revealRecordId !== undefined ? (
-            <RevealAndClaim recordId={BigInt(revealRecordId)} />
+            <RevealAndClaim
+              recordId={BigInt(revealRecordId)}
+              onSuccess={handleRevealSuccess}
+            />
           ) : (
             <>
               <div className="blur-sm">
-                <RevealAndClaim recordId={BigInt(0)} />
+                <RevealAndClaim
+                  recordId={BigInt(0)}
+                  onSuccess={handleRevealSuccess}
+                />
               </div>
               <div
                 className="absolute inset-0 cursor-pointer"
@@ -303,10 +313,17 @@ const ViewRecordCount = () => {
   );
 };
 
-function RevealAndClaim({ recordId }: { recordId: bigint }) {
+function RevealAndClaim({
+  recordId,
+  onSuccess,
+}: {
+  recordId: bigint;
+  onSuccess: () => void;
+}) {
   const [message, setMessage] = useState("");
   const [userSha256Msg, setUserSha256Msg] = useState("");
   const [isMatch, setIsMatch] = useState<boolean>(Number(recordId) !== 0);
+  const [hasCalledOnSuccess, setHasCalledOnSuccess] = useState(false);
 
   useEffect(() => {
     const hashArray = sha256(message);
@@ -329,6 +346,7 @@ function RevealAndClaim({ recordId }: { recordId: bigint }) {
     data: recordData,
     isError,
     isLoading,
+    isSuccess,
   } = useContractRead({
     address: CONTRACT_ADDRESS,
     abi: [
@@ -422,13 +440,6 @@ function RecordTable({ onRevealChange, records }: RecordTableProps) {
     onRevealChange(id);
     setRevealRecordId(id);
   };
-
-  // Handle loading state
-  // if (ponder.isLoading) {
-  //   return <div>Loading...</div>;
-  // }
-
-  //const records = ponder.records || [];
 
   return (
     <>
