@@ -32,7 +32,7 @@ const testifiAbi: Abi = [
         internalType: "bytes",
       },
     ],
-    outputs: [],
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
     stateMutability: "payable",
   },
   {
