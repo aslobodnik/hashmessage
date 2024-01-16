@@ -38,7 +38,7 @@ contract Testifi {
     function addRecord(
         string memory _msgHashSha256,
         bytes memory _msgHashSignature
-    ) public payable {
+    ) public payable returns (uint) {
         require(!hashExits[_msgHashSha256], "Hash already exists.");
 
         bytes32 digest = keccak256(
@@ -81,6 +81,8 @@ contract Testifi {
             msg.value
         );
         nextRecordId++;
+
+        return nextRecordId - 1; // Return the ID of the record just added
     }
 
     function revealAndClaimBounty(
