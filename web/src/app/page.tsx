@@ -25,7 +25,7 @@ import { sha256 } from "@noble/hashes/sha256";
 import { usePonder } from "@/hooks/usePonder";
 import { Record } from "@/lib/ponder";
 
-const CONTRACT_ADDRESS = "0xc6a83d8840e0C01A7B7071B268214e3559b3973C";
+const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const BUTTON_WIDTH = "40";
 
 type RecordTableProps = {
@@ -107,7 +107,7 @@ export default function Home() {
       <h1 className="text-2xl font-bold text-center mb-4 opacity-80">
         TestiFi
       </h1>
-
+      <span className="text-xs">hi</span>
       <div className="sm:px-16 px-4  flex-col ml-1">
         <div className="flex">
           <Input
