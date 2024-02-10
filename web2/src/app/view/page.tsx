@@ -46,43 +46,7 @@ export default function View() {
   const filterRevealedCheck = (value: boolean) => {
     setFilterRevealed(value);
   };
-  const records: Record[] = [
-    {
-      author: "0xf39F...2266", // Assuming Address is a string
-      hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
-      bounty: 250n, // Changed to bigint
-      message: "",
-    },
-    {
-      author: "0xf39F...2266", // Assuming Address is a string
-      hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
-      bounty: 150n, // Changed to bigint
-      message: "",
-    },
-    {
-      author: "0xf39F...2266", // Assuming Address is a string
-      hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
-      bounty: 150n, // Changed to bigint
-      message: "",
-    },
-    {
-      author: "0xf39F...2266", // Assuming Address is a string
-      hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
-      bounty: 150n, // Changed to bigint
-      message: "hello",
-    },
-    {
-      author: "0xf39F...2266", // Assuming Address is a string
-      hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
-      bounty: 150n, // Changed to bigint
-      message: "",
-    },
-  ];
 
-  const hashChunks = chunkHash(
-    "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
-    16
-  );
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
       <NavBar />
@@ -154,17 +118,6 @@ function chunkHash(sha256Msg: string, chunkSize: number = 16): string[] {
 }
 
 function RevealPrediction({ record }: { record: Record }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
-  };
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // Your form submission logic here
-    console.log("Form submitted");
-    setIsModalOpen(false); // Close the modal after form submission
-  };
   return (
     <>
       {record.message === "" ? (
@@ -210,3 +163,41 @@ function RevealPrediction({ record }: { record: Record }) {
     </>
   );
 }
+
+const records: Record[] = [
+  {
+    author: "0xf39F...2266", // Assuming Address is a string
+    hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
+    bounty: 250n, // Changed to bigint
+    message: "",
+  },
+  {
+    author: "0xf39F...2261", // Assuming Address is a string
+    hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
+    bounty: 150n, // Changed to bigint
+    message: "",
+  },
+  {
+    author: "0xf39F...2262", // Assuming Address is a string
+    hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
+    bounty: 150n, // Changed to bigint
+    message: "",
+  },
+  {
+    author: "0xf39F...2263", // Assuming Address is a string
+    hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
+    bounty: 150n, // Changed to bigint
+    message: "hello",
+  },
+  {
+    author: "0xf39F...2264", // Assuming Address is a string
+    hash: "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
+    bounty: 150n, // Changed to bigint
+    message: "",
+  },
+];
+
+const hashChunks = chunkHash(
+  "a441b15fe9a3cf5661190a0b93b9decda441b15fe9a3cf5661190a0b93b9decd",
+  16
+);
