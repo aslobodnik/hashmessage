@@ -8,19 +8,27 @@ import { NavBar } from "@/components/NavBar";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { sha256, toHex } from "viem";
 
 export default function Home() {
   const [message, setMessage] = useState("");
   const [bountyCheck, setBountyCheck] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
+  const [hash, setHash] = useState("");
 
   const BountyCheckChange = (value: boolean) => {
     setBountyCheck(value);
   };
-  console.log(sha256(toHex(message)));
-  console.log(chunkHash(sha256(toHex(message)), 32));
+  console.log(hash);
+  console.log(chunkHash(hash, 32));
+
+  useEffect(() => {
+    if (message.length > 0) {
+      setHash(sha256(toHex(message)));
+    }
+  }, [message]);
+
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
       <NavBar />
@@ -33,7 +41,7 @@ export default function Home() {
             <Label className=" text-gray-400">Prediction</Label>
             <Input
               className=" bg-green-50 mt-1  placeholder:text-gray-400"
-              placeholder="ETH will hit $10,000 by 2030"
+              placeholder="OG Facaster floor is 10ETH"
               value={message}
               onChange={(event) => setMessage(event.target.value)}
             ></Input>
@@ -59,14 +67,13 @@ export default function Home() {
         </div>
         <div className="mt-5 flex flex-col">
           <Label className="text-gray-400">Hash (SHA256)</Label>
-          <div className="flex gap-2">
-            <div className="w-fit p-2 rounded mt-1 font-mono text-gray-600 bg-green-100">
-              a441b15fe9a3cf5661190a0b93b9decd<br></br>
-              7d04127288cc87256661190a0b93b9de
+          <div className="flex gap-4">
+            <div className=" w-[324px] h-16 p-2 rounded mt-1 font-mono text-gray-600 bg-green-100">
+              {chunkHash(hash, 32).map((chunk, index) => (
+                <div key={index}>{chunk}</div>
+              ))}
             </div>
-            <Button className="h-full w-36  self-center text-lg">
-              Sign
-            </Button>{" "}
+            <Button className="h-full w-36  self-center text-lg">Sign</Button>{" "}
           </div>
         </div>
         <Button
