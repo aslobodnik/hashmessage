@@ -9,13 +9,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import Link from "next/link";
 import { useState } from "react";
+import { sha256, toHex } from "viem";
 
 export default function Home() {
+  const [message, setMessage] = useState("");
   const [bountyCheck, setBountyCheck] = useState(false);
+  const [isSigned, setIsSigned] = useState(false);
 
-  const handleCheckboxChange = (value: boolean) => {
+  const BountyCheckChange = (value: boolean) => {
     setBountyCheck(value);
   };
+  console.log(sha256(toHex(message)));
+  console.log(chunkHash(sha256(toHex(message)), 32));
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
       <NavBar />
@@ -29,6 +34,8 @@ export default function Home() {
             <Input
               className=" bg-green-50 mt-1  placeholder:text-gray-400"
               placeholder="ETH will hit $10,000 by 2030"
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
             ></Input>
           </div>
           {bountyCheck && (
@@ -45,7 +52,7 @@ export default function Home() {
           <Checkbox
             className=""
             checked={bountyCheck}
-            onCheckedChange={handleCheckboxChange}
+            onCheckedChange={BountyCheckChange}
           />
 
           <Label className="mt-[2px]  text-gray-400">Bounty</Label>
@@ -62,10 +69,19 @@ export default function Home() {
             </Button>{" "}
           </div>
         </div>
-        <Button className="h-full w-full max-w-lg mt-4 self-center text-lg">
+        <Button
+          disabled={!isSigned}
+          className="h-full w-full max-w-lg mt-4 self-center text-lg"
+        >
           Create Prediction
         </Button>
       </div>
     </main>
   );
+}
+
+function chunkHash(sha256Msg: string, chunkSize: number = 16): string[] {
+  const cleanMsg = sha256Msg.replace(/^0x/, "");
+
+  return cleanMsg.match(new RegExp(`.{1,${chunkSize}}`, "g")) || [];
 }
