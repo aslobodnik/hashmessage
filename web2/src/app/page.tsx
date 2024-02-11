@@ -9,8 +9,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { sha256, toHex } from "viem";
-import { useSignMessage } from "wagmi";
+import { sha256, toHex, Hex } from "viem";
+import { useSignMessage, useSimulateContract, useWriteContract } from "wagmi";
+import { localhost } from "wagmi/chains";
+import { testifiAbi } from "@/lib/abi";
+
+const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -23,13 +27,9 @@ export default function Home() {
     setBountyCheck(value);
   };
 
-  const createPrediction = () => {
-    console.log("Creating prediction");
-  };
-
   useEffect(() => {
     if (message.length > 0) {
-      setHash(sha256(toHex(message)));
+      setHash(sha256(toHex(message)).replace(/^0x/, ""));
     }
   }, [message]);
 
@@ -37,9 +37,7 @@ export default function Home() {
     signMessage,
     status: signingStatus,
     data: signMessageData,
-  } = useSignMessage({
-    mutation: { onMutate({ message: hash }) {} },
-  });
+  } = useSignMessage();
 
   useEffect(() => {
     if (signingStatus === "success") {
@@ -55,7 +53,18 @@ export default function Home() {
     setSignedMsg("");
   }, [message]);
 
-  console.log({ message, signedMsg, isSigned }, signedMsg.length);
+  const result = useSimulateContract({
+    abi: testifiAbi,
+    address: CONTRACT_ADDRESS,
+    functionName: "addRecord",
+    args: [hash, signedMsg as Hex],
+    value: 0n,
+    chainId: localhost.id,
+  });
+
+  const { data: txthash, writeContract } = useWriteContract();
+
+  console.log({ result });
 
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
@@ -112,7 +121,16 @@ export default function Home() {
         <Button
           disabled={!(isSigned && signedMsg.length > 0)}
           className="h-full w-full max-w-lg mt-4 self-center text-lg"
-          onClick={createPrediction}
+          onClick={() =>
+            writeContract({
+              abi: testifiAbi,
+              address: CONTRACT_ADDRESS,
+              functionName: "addRecord",
+              args: [hash, signedMsg as Hex],
+              value: 0n,
+              chainId: localhost.id,
+            })
+          }
         >
           Create Prediction
         </Button>
