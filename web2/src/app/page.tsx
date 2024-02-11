@@ -23,6 +23,10 @@ export default function Home() {
     setBountyCheck(value);
   };
 
+  const createPrediction = () => {
+    console.log("Creating prediction");
+  };
+
   useEffect(() => {
     if (message.length > 0) {
       setHash(sha256(toHex(message)));
@@ -32,7 +36,7 @@ export default function Home() {
   const {
     signMessage,
     status: signingStatus,
-    data: SignMessageData,
+    data: signMessageData,
   } = useSignMessage({
     mutation: { onMutate({ message: hash }) {} },
   });
@@ -40,11 +44,11 @@ export default function Home() {
   useEffect(() => {
     if (signingStatus === "success") {
       setIsSigned(true);
-      setSignedMsg(SignMessageData || "");
+      setSignedMsg(signMessageData || "");
     } else {
       setIsSigned(false);
     }
-  }, [signingStatus]);
+  }, [signingStatus, signMessageData]);
 
   useEffect(() => {
     setIsSigned(true);
@@ -108,6 +112,7 @@ export default function Home() {
         <Button
           disabled={!(isSigned && signedMsg.length > 0)}
           className="h-full w-full max-w-lg mt-4 self-center text-lg"
+          onClick={createPrediction}
         >
           Create Prediction
         </Button>
