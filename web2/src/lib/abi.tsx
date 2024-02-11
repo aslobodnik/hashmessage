@@ -16,7 +16,7 @@ interface AbiItem {
 // Define the type for the ABI array
 type Abi = AbiItem[];
 
-const testifiAbi: Abi = [
+export const testifiAbi: Abi = [
   {
     type: "function",
     name: "addRecord",
@@ -147,6 +147,3 @@ const testifiAbi: Abi = [
     anonymous: false,
   },
 ];
-
-// Export the typed ABI for use in other parts of your application
-export default testifiAbi;
