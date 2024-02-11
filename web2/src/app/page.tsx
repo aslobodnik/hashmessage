@@ -10,24 +10,48 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { sha256, toHex } from "viem";
+import { useSignMessage } from "wagmi";
 
 export default function Home() {
   const [message, setMessage] = useState("");
   const [bountyCheck, setBountyCheck] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
+  const [signedMsg, setSignedMsg] = useState("");
   const [hash, setHash] = useState("");
 
   const BountyCheckChange = (value: boolean) => {
     setBountyCheck(value);
   };
-  console.log(hash);
-  console.log(chunkHash(hash, 32));
 
   useEffect(() => {
     if (message.length > 0) {
       setHash(sha256(toHex(message)));
     }
   }, [message]);
+
+  const {
+    signMessage,
+    status: signingStatus,
+    data: SignMessageData,
+  } = useSignMessage({
+    mutation: { onMutate({ message: hash }) {} },
+  });
+
+  useEffect(() => {
+    if (signingStatus === "success") {
+      setIsSigned(true);
+      setSignedMsg(SignMessageData || "");
+    } else {
+      setIsSigned(false);
+    }
+  }, [signingStatus]);
+
+  useEffect(() => {
+    setIsSigned(true);
+    setSignedMsg("");
+  }, [message]);
+
+  console.log({ message, signedMsg, isSigned }, signedMsg.length);
 
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
@@ -73,11 +97,16 @@ export default function Home() {
                 <div key={index}>{chunk}</div>
               ))}
             </div>
-            <Button className="h-full w-36  self-center text-lg">Sign</Button>{" "}
+            <Button
+              onClick={() => signMessage({ message: hash })}
+              className="h-full w-36  self-center text-lg"
+            >
+              Sign
+            </Button>{" "}
           </div>
         </div>
         <Button
-          disabled={!isSigned}
+          disabled={!(isSigned && signedMsg.length > 0)}
           className="h-full w-full max-w-lg mt-4 self-center text-lg"
         >
           Create Prediction
