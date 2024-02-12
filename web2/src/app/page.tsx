@@ -22,6 +22,7 @@ export default function Home() {
   const [bountyCheck, setBountyCheck] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showTxSuccess, setTxShowSuccess] = useState(false);
 
   const [signedMsg, setSignedMsg] = useState("");
   const [hash, setHash] = useState("");
@@ -66,7 +67,11 @@ export default function Home() {
     chainId: localhost.id,
   });
 
-  const { data: txnhash, writeContract } = useWriteContract();
+  const {
+    data: txnhash,
+    writeContract,
+    status: createRecordStatus,
+  } = useWriteContract();
 
   function handleWriteContract() {
     writeContract({
@@ -86,11 +91,17 @@ export default function Home() {
     if (signingStatus === "success") {
       setShowSuccess(true);
     }
-
     const timer = setTimeout(() => setShowSuccess(false), 3000);
 
     return () => clearTimeout(timer);
   }, [signingStatus]);
+
+  useEffect(() => {
+    // Whenever 'signingStatus' becomes 'success', show the success message
+    if (createRecordStatus === "success") {
+      setTxShowSuccess(true);
+    }
+  }, [createRecordStatus]);
 
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
@@ -141,27 +152,37 @@ export default function Home() {
               disabled={signingStatus === "pending"}
               className="h-11 w-36  self-center text-lg"
             >
-              {
-                signingStatus === "pending" ? (
-                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  "Sign"
-                ) // Do nothing or render null for the else case
-              }
+              {signingStatus === "pending" ? (
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Sign"
+              )}
             </Button>{" "}
           </div>
         </div>
         {/* TODO:add success
         TODO: add disable button after submission*/}
         <Button
-          disabled={!(isSigned && signedMsg.length > 0)}
-          className="h-full w-full max-w-lg mt-4 self-center text-lg"
+          disabled={
+            !(isSigned && signedMsg.length > 0) ||
+            createRecordStatus === "pending"
+          }
+          className="h-11 w-full max-w-lg mt-4 self-center text-lg"
           onClick={handleWriteContract}
         >
-          Create Prediction
+          {createRecordStatus === "pending" ? (
+            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            "Create Prediction"
+          )}
         </Button>
         {showSuccess && (
           <div className="mt-4 text-green-500">Hash Signed Successfully</div>
+        )}
+        {showTxSuccess && (
+          <div className="mt-4 text-green-500">
+            Prediction Created: {txnhash}
+          </div>
         )}
       </div>
     </main>
