@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { NavBar } from "@/components/NavBar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -20,6 +21,8 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [bountyCheck, setBountyCheck] = useState(false);
   const [isSigned, setIsSigned] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const [signedMsg, setSignedMsg] = useState("");
   const [hash, setHash] = useState("");
 
@@ -37,6 +40,7 @@ export default function Home() {
     signMessage,
     status: signingStatus,
     data: signMessageData,
+    error: signMessageError,
   } = useSignMessage();
 
   useEffect(() => {
@@ -62,9 +66,31 @@ export default function Home() {
     chainId: localhost.id,
   });
 
-  const { data: txthash, writeContract } = useWriteContract();
+  const { data: txnhash, writeContract } = useWriteContract();
 
-  console.log({ result });
+  function handleWriteContract() {
+    writeContract({
+      abi: testifiAbi,
+      address: CONTRACT_ADDRESS,
+      functionName: "addRecord",
+      args: [hash, signedMsg as Hex],
+      value: 0n,
+      chainId: localhost.id,
+    });
+  }
+
+  console.log({ signingStatus, signMessageError });
+
+  useEffect(() => {
+    // Whenever 'signingStatus' becomes 'success', show the success message
+    if (signingStatus === "success") {
+      setShowSuccess(true);
+    }
+
+    const timer = setTimeout(() => setShowSuccess(false), 3000);
+
+    return () => clearTimeout(timer);
+  }, [signingStatus]);
 
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
@@ -112,28 +138,31 @@ export default function Home() {
             </div>
             <Button
               onClick={() => signMessage({ message: hash })}
-              className="h-full w-36  self-center text-lg"
+              disabled={signingStatus === "pending"}
+              className="h-11 w-36  self-center text-lg"
             >
-              Sign
+              {
+                signingStatus === "pending" ? (
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  "Sign"
+                ) // Do nothing or render null for the else case
+              }
             </Button>{" "}
           </div>
         </div>
+        {/* TODO:add success
+        TODO: add disable button after submission*/}
         <Button
           disabled={!(isSigned && signedMsg.length > 0)}
           className="h-full w-full max-w-lg mt-4 self-center text-lg"
-          onClick={() =>
-            writeContract({
-              abi: testifiAbi,
-              address: CONTRACT_ADDRESS,
-              functionName: "addRecord",
-              args: [hash, signedMsg as Hex],
-              value: 0n,
-              chainId: localhost.id,
-            })
-          }
+          onClick={handleWriteContract}
         >
           Create Prediction
         </Button>
+        {showSuccess && (
+          <div className="mt-4 text-green-500">Hash Signed Successfully</div>
+        )}
       </div>
     </main>
   );
