@@ -58,7 +58,11 @@ export default function Home() {
     setSignedMsg("");
   }, [message]);
 
-  const result = useSimulateContract({
+  const {
+    data: addRecordSimulate,
+    isError: isErrorAddRecord,
+    isSuccess: isSuccessAddRecord,
+  } = useSimulateContract({
     abi: testifiAbi,
     address: CONTRACT_ADDRESS,
     functionName: "addRecord",
@@ -103,6 +107,7 @@ export default function Home() {
     }
   }, [createRecordStatus]);
 
+  console.log({ isSuccessAddRecord });
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
       <NavBar />
@@ -163,10 +168,7 @@ export default function Home() {
         {/* TODO:add success
         TODO: add disable button after submission*/}
         <Button
-          disabled={
-            !(isSigned && signedMsg.length > 0) ||
-            createRecordStatus === "pending"
-          }
+          disabled={!isSuccessAddRecord}
           className="h-11 w-full max-w-lg mt-4 self-center text-lg"
           onClick={handleWriteContract}
         >
