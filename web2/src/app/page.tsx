@@ -23,6 +23,7 @@ export default function Home() {
   const [isSigned, setIsSigned] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showTxSuccess, setTxShowSuccess] = useState(false);
+  const [txHash, setTxHash] = useState("");
 
   const [signedMsg, setSignedMsg] = useState("");
   const [hash, setHash] = useState("");
@@ -42,12 +43,14 @@ export default function Home() {
     status: signingStatus,
     data: signMessageData,
     error: signMessageError,
+    reset: resetSignMessage,
   } = useSignMessage();
 
   useEffect(() => {
     if (signingStatus === "success") {
       setIsSigned(true);
       setSignedMsg(signMessageData || "");
+      resetSignMessage();
     } else {
       setIsSigned(false);
     }
@@ -72,9 +75,10 @@ export default function Home() {
   });
 
   const {
-    data: txnhash,
+    data: _txHash,
     writeContract,
     status: createRecordStatus,
+    reset: resetWriteContract,
   } = useWriteContract();
 
   function handleWriteContract() {
@@ -91,7 +95,6 @@ export default function Home() {
   console.log({ signingStatus, signMessageError });
 
   useEffect(() => {
-    // Whenever 'signingStatus' becomes 'success', show the success message
     if (signingStatus === "success") {
       setShowSuccess(true);
     }
@@ -101,9 +104,11 @@ export default function Home() {
   }, [signingStatus]);
 
   useEffect(() => {
-    // Whenever 'signingStatus' becomes 'success', show the success message
     if (createRecordStatus === "success") {
       setTxShowSuccess(true);
+      setTxHash(_txHash || "");
+      resetWriteContract(); // reset the status
+      setMessage(""); // reset the message
     }
   }, [createRecordStatus]);
 
@@ -154,13 +159,15 @@ export default function Home() {
             </div>
             <Button
               onClick={() => signMessage({ message: hash })}
-              disabled={signingStatus === "pending"}
+              disabled={signingStatus === "pending" || !isSigned}
               className="h-11 w-36  self-center text-lg"
             >
               {signingStatus === "pending" ? (
                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
+              ) : isSigned ? (
                 "Sign"
+              ) : (
+                "Signed"
               )}
             </Button>{" "}
           </div>
@@ -178,14 +185,8 @@ export default function Home() {
             "Create Prediction"
           )}
         </Button>
-        {showSuccess && (
-          <div className="mt-4 text-green-500">Hash Signed Successfully</div>
-        )}
-        {showTxSuccess && (
-          <div className="mt-4 text-green-500">
-            Prediction Created: {txnhash}
-          </div>
-        )}
+
+        <DisplaySuccessMessage />
       </div>
     </main>
   );
@@ -195,4 +196,19 @@ function chunkHash(sha256Msg: string, chunkSize: number = 16): string[] {
   const cleanMsg = sha256Msg.replace(/^0x/, "");
 
   return cleanMsg.match(new RegExp(`.{1,${chunkSize}}`, "g")) || [];
+}
+
+// handles displaying success message for both txn & signing
+function DisplaySuccessMessage({
+  txHash,
+  message,
+  txSuccess,
+  signSuccess,
+}: {
+  txHash?: string;
+  message?: string;
+  txSuccess?: boolean;
+  signSuccess?: boolean;
+}) {
+  return <div className="mt-4 text-green-500"></div>;
 }
