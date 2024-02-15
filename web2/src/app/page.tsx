@@ -23,7 +23,7 @@ export default function Home() {
 
   const [bountyCheck, setBountyCheck] = useState(false); // controls if the bounty input is visible
 
-  const [isSigned, setIsSigned] = useState(false);
+  const [isSigned, setIsSigned] = useState(false); // controls if current message is signed
   const [showSuccess, setShowSuccess] = useState(false);
   const [showTxSuccess, setTxShowSuccess] = useState(false);
   const [txHash, setTxHash] = useState("");
@@ -35,6 +35,7 @@ export default function Home() {
     setBountyCheck(value);
   };
 
+  //sha256 of message
   useEffect(() => {
     if (message.length > 0) {
       setHash(sha256(toHex(message)).replace(/^0x/, ""));
@@ -65,7 +66,7 @@ export default function Home() {
   const {
     data: addRecordSimulate,
     isError: isErrorAddRecord,
-    isSuccess: isSuccessAddRecord,
+    isSuccess: canAddRecord,
   } = useSimulateContract({
     abi: testifiAbi,
     address: CONTRACT_ADDRESS,
@@ -116,7 +117,6 @@ export default function Home() {
     }
   }, [createRecordStatus]);
 
-  console.log({ isSuccessAddRecord });
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
       <NavBar />
@@ -179,7 +179,7 @@ export default function Home() {
         {/* TODO:add success
         TODO: add disable button after submission*/}
         <Button
-          disabled={!isSuccessAddRecord}
+          disabled={!canAddRecord}
           className="h-11 w-full max-w-lg mt-4 self-center text-lg"
           onClick={handleWriteContract}
         >
