@@ -18,8 +18,11 @@ import { testifiAbi } from "@/lib/abi";
 const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 export default function Home() {
-  const [message, setMessage] = useState("");
-  const [bountyCheck, setBountyCheck] = useState(false);
+  const [message, setMessage] = useState(""); // captures value of the secret message
+  const [lastMessage, setLastMessage] = useState(""); // stores the most recent message
+
+  const [bountyCheck, setBountyCheck] = useState(false); // controls if the bounty input is visible
+
   const [isSigned, setIsSigned] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showTxSuccess, setTxShowSuccess] = useState(false);
@@ -51,13 +54,11 @@ export default function Home() {
       setIsSigned(true);
       setSignedMsg(signMessageData || "");
       resetSignMessage();
-    } else {
-      setIsSigned(false);
     }
   }, [signingStatus, signMessageData]);
 
   useEffect(() => {
-    setIsSigned(true);
+    setIsSigned(false);
     setSignedMsg("");
   }, [message]);
 
@@ -92,7 +93,10 @@ export default function Home() {
     });
   }
 
-  console.log({ signingStatus, signMessageError });
+  function handleSignMessage() {
+    signMessage({ message: hash });
+    setLastMessage(message);
+  }
 
   useEffect(() => {
     if (signingStatus === "success") {
@@ -158,16 +162,16 @@ export default function Home() {
               ))}
             </div>
             <Button
-              onClick={() => signMessage({ message: hash })}
-              disabled={signingStatus === "pending" || !isSigned}
+              onClick={handleSignMessage}
+              disabled={signingStatus === "pending" || isSigned}
               className="h-11 w-36  self-center text-lg"
             >
               {signingStatus === "pending" ? (
                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
               ) : isSigned ? (
-                "Sign"
-              ) : (
                 "Signed"
+              ) : (
+                "Sign"
               )}
             </Button>{" "}
           </div>
@@ -186,7 +190,7 @@ export default function Home() {
           )}
         </Button>
 
-        <DisplaySuccessMessage />
+        <DisplaySuccessMessage message={lastMessage} isSigned={isSigned} />
       </div>
     </main>
   );
@@ -203,12 +207,17 @@ function DisplaySuccessMessage({
   txHash,
   message,
   txSuccess,
-  signSuccess,
+  isSigned,
 }: {
   txHash?: string;
   message?: string;
   txSuccess?: boolean;
-  signSuccess?: boolean;
+  isSigned?: boolean;
 }) {
-  return <div className="mt-4 text-green-500"></div>;
+  console.log(message);
+  return (
+    <div className="mt-4 text-green-500">
+      {isSigned ? `${message} signed!` : ""}
+    </div>
+  );
 }
