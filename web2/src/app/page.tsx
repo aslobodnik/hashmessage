@@ -79,8 +79,9 @@ export default function Home() {
   const {
     data: _txHash,
     writeContract,
-    status: createRecordStatus,
+    status: addRecordStatus,
     reset: resetWriteContract,
+    isSuccess: addRecordSuccess,
   } = useWriteContract();
 
   function handleWriteContract() {
@@ -109,13 +110,12 @@ export default function Home() {
   }, [signingStatus]);
 
   useEffect(() => {
-    if (createRecordStatus === "success") {
+    if (addRecordStatus === "success") {
       setTxShowSuccess(true);
       setTxHash(_txHash || "");
       resetWriteContract(); // reset the status
-      setMessage(""); // reset the message
     }
-  }, [createRecordStatus]);
+  }, [addRecordStatus]);
 
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
@@ -183,7 +183,7 @@ export default function Home() {
           className="h-11 w-full max-w-lg mt-4 self-center text-lg"
           onClick={handleWriteContract}
         >
-          {createRecordStatus === "pending" ? (
+          {addRecordStatus === "pending" ? (
             <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             "Create Prediction"
