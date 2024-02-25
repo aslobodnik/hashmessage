@@ -26,6 +26,7 @@
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "tslib": "^2.6.2",
+    "usehooks-ts": "^2.15.1",
     "viem": "^2.7.1",
     "wagmi": "^2.5.5"
   },
