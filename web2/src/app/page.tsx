@@ -3,33 +3,35 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { NavBar } from "@/components/NavBar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { sha256, toHex, Hex } from "viem";
+import { sha256, toHex, Hex, parseEther } from "viem";
 import { useSignMessage, useSimulateContract, useWriteContract } from "wagmi";
+
 import { localhost } from "wagmi/chains";
 import { testifiAbi } from "@/lib/abi";
 
-const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 export default function Home() {
   const [message, setMessage] = useState(""); // captures value of the secret message
   const [lastMessage, setLastMessage] = useState(""); // stores the most recent message
+  const [bounty, setBounty] = useState("0"); // captures value of the bounty [optional]
 
   const [bountyCheck, setBountyCheck] = useState(false); // controls if the bounty input is visible
 
   const [isSigned, setIsSigned] = useState(false); // controls if current message is signed
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showTxSuccess, setTxShowSuccess] = useState(false);
+  const [txSuccess, setTxSuccess] = useState(false);
   const [txHash, setTxHash] = useState("");
 
   const [signedMsg, setSignedMsg] = useState("");
   const [hash, setHash] = useState("");
+
+  const [failureReason, setFailureReason] = useState<string>("");
 
   const BountyCheckChange = (value: boolean) => {
     setBountyCheck(value);
@@ -67,14 +69,21 @@ export default function Home() {
     data: addRecordSimulate,
     isError: isErrorAddRecord,
     isSuccess: canAddRecord,
+    failureReason: addRecordFailureReason,
   } = useSimulateContract({
     abi: testifiAbi,
     address: CONTRACT_ADDRESS,
     functionName: "addRecord",
     args: [hash, signedMsg as Hex],
-    value: 0n,
+    value: parseEther(bounty),
     chainId: localhost.id,
   });
+  console.log(parseEther(bounty));
+  // if (isErrorAddRecord) {
+  //   const contractError = addRecordFailureReason as any;
+  //   const failureReason = contractError.cause?.reason;
+  //   setFailureReason(failureReason);
+  // }
 
   const {
     data: _txHash,
@@ -84,13 +93,13 @@ export default function Home() {
     isSuccess: addRecordSuccess,
   } = useWriteContract();
 
-  function handleWriteContract() {
+  function handleAddRecord() {
     writeContract({
       abi: testifiAbi,
       address: CONTRACT_ADDRESS,
       functionName: "addRecord",
       args: [hash, signedMsg as Hex],
-      value: 0n,
+      value: parseEther(bounty),
       chainId: localhost.id,
     });
   }
@@ -101,22 +110,14 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (signingStatus === "success") {
-      setShowSuccess(true);
-    }
-    const timer = setTimeout(() => setShowSuccess(false), 3000);
-
-    return () => clearTimeout(timer);
-  }, [signingStatus]);
-
-  useEffect(() => {
     if (addRecordStatus === "success") {
-      setTxShowSuccess(true);
+      setTxSuccess(true);
       setTxHash(_txHash || "");
       resetWriteContract(); // reset the status
     }
   }, [addRecordStatus]);
 
+  console.log({ failureReason });
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
       <NavBar />
@@ -140,6 +141,8 @@ export default function Home() {
               <Input
                 className=" bg-green-50 mt-1 placeholder:text-gray-400"
                 placeholder="0.1"
+                value={bounty}
+                onChange={(event) => setBounty(event.target.value)}
               ></Input>
             </div>
           )}
@@ -176,12 +179,11 @@ export default function Home() {
             </Button>{" "}
           </div>
         </div>
-        {/* TODO:add success
-        TODO: add disable button after submission*/}
+
         <Button
           disabled={!canAddRecord}
           className="h-11 w-full max-w-lg mt-4 self-center text-lg"
-          onClick={handleWriteContract}
+          onClick={handleAddRecord}
         >
           {addRecordStatus === "pending" ? (
             <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
@@ -190,7 +192,12 @@ export default function Home() {
           )}
         </Button>
 
-        <DisplaySuccessMessage message={lastMessage} isSigned={isSigned} />
+        <DisplaySuccessMessage
+          message={lastMessage}
+          isSigned={isSigned}
+          txSuccess={txSuccess}
+          txHash={txHash}
+        />
       </div>
     </main>
   );
@@ -214,10 +221,38 @@ function DisplaySuccessMessage({
   txSuccess?: boolean;
   isSigned?: boolean;
 }) {
-  console.log(message);
+  // Function declaration for rendering the signed message
+  function renderSignedMessage() {
+    if (isSigned) {
+      return (
+        <p>
+          {message
+            ? `${message} has been signed!`
+            : "The document has been signed!"}
+        </p>
+      );
+    }
+    return null;
+  }
+
+  // Function declaration for rendering the transaction success message
+  function renderTxSuccessMessage() {
+    if (txSuccess) {
+      return (
+        <p>
+          {txHash
+            ? `Success! Transaction Hash: ${txHash}`
+            : "Transaction successful!"}
+        </p>
+      );
+    }
+    return null;
+  }
+
   return (
-    <div className="mt-4 text-green-500">
-      {isSigned ? `${message} signed!` : ""}
+    <div className="mt-4">
+      <div className="text-green-500">{renderSignedMessage()}</div>
+      <div className="text-blue-500">{renderTxSuccessMessage()}</div>
     </div>
   );
 }
