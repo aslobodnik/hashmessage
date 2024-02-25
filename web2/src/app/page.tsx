@@ -181,7 +181,7 @@ export default function Home() {
         </div>
 
         <Button
-          disabled={!canAddRecord}
+          disabled={!canAddRecord && txSuccess}
           className="h-11 w-full max-w-lg mt-4 self-center text-lg"
           onClick={handleAddRecord}
         >
