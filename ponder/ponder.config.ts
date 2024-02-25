@@ -19,7 +19,7 @@ export default createConfig({
       network: "localhost",
       abi: ExampleContractAbi,
       address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      startBlock: 0,
+      startBlock: 3,
     },
     // ExampleContract: {
     //   network: "baseSepolia",
