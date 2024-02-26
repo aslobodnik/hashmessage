@@ -63,6 +63,7 @@ export default function Home() {
   useEffect(() => {
     setIsSigned(false);
     setSignedMsg("");
+    setTxSuccess(false);
   }, [message]);
 
   const {
@@ -118,16 +119,17 @@ export default function Home() {
   }, [addRecordStatus]);
 
   console.log({ failureReason });
+  console.log(txSuccess);
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
       <NavBar />
       <div className="  max-w-2xl mt-10 mx-auto">
         <h1 className="text-3xl  mb-10  text-gray-600 text-center font-bold">
-          Make A Prediction
+          Write a Statement
         </h1>
         <div className="flex gap-4">
           <div className="grow   max-w-lg">
-            <Label className=" text-gray-400">Prediction</Label>
+            <Label className=" text-gray-400">Statement</Label>
             <Input
               className=" bg-green-50 mt-1  placeholder:text-gray-400"
               placeholder="OG Facaster floor is 10ETH"
@@ -181,14 +183,14 @@ export default function Home() {
         </div>
 
         <Button
-          disabled={!canAddRecord && txSuccess}
+          disabled={!canAddRecord || txSuccess}
           className="h-11 w-full max-w-lg mt-4 self-center text-lg"
           onClick={handleAddRecord}
         >
           {addRecordStatus === "pending" ? (
             <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
           ) : (
-            "Create Prediction"
+            "Create"
           )}
         </Button>
 
