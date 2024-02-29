@@ -240,11 +240,24 @@ function DisplaySuccessMessage({
   // Function declaration for rendering the transaction success message
   function renderTxSuccessMessage() {
     if (txSuccess) {
+      const url = `https://etherscan.io/tx/${txHash}`;
       return (
         <p>
-          {txHash
-            ? `Success! Transaction Hash: ${txHash}`
-            : "Transaction successful!"}
+          {txHash ? (
+            <span>
+              Success! Transaction{" "}
+              <Link
+                className=" underline"
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Hash
+              </Link>
+            </span>
+          ) : (
+            "Transaction successful!"
+          )}
         </p>
       );
     }
