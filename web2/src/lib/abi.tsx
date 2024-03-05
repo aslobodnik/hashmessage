@@ -1,22 +1,4 @@
-// Define the structure of a single ABI item
-interface AbiItem {
-  type: string;
-  name?: string;
-  inputs?: {
-    name: string;
-    type: string;
-    internalType: string;
-    indexed?: boolean;
-  }[];
-  outputs?: { name: string; type: string; internalType: string }[];
-  stateMutability?: string;
-  anonymous?: boolean;
-}
-
-// Define the type for the ABI array
-type Abi = AbiItem[];
-
-export const testifiAbi: Abi = [
+export const testifiAbi = [
   {
     type: "function",
     name: "addRecord",
@@ -146,4 +128,4 @@ export const testifiAbi: Abi = [
     ],
     anonymous: false,
   },
-];
+] as const;
