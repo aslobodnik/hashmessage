@@ -12,7 +12,10 @@ export function NavBar() {
     <div className="flex w-full justify-between items-center">
       <div className="flex gap-4 items-center">
         <div className="text-4xl text-gray-600 font-bold">Testifi</div>
-        <Link href="/" className=" hover:text-green-500 active:text-green-600">
+        <Link
+          href="/how"
+          className=" hover:text-green-500 active:text-green-600"
+        >
           <div className=" text-gray-400">How It Works</div>
         </Link>
       </div>
