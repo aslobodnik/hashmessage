@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { sha256, toHex, Hex, parseEther } from "viem";
 import { useSignMessage, useSimulateContract, useWriteContract } from "wagmi";
 
@@ -30,8 +30,7 @@ export default function Home() {
 
   const [signedMsg, setSignedMsg] = useState("");
   const [hash, setHash] = useState("");
-
-  const [failureReason, setFailureReason] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const BountyCheckChange = (value: boolean) => {
     setBountyCheck(value);
@@ -68,7 +67,6 @@ export default function Home() {
 
   const {
     data: addRecordSimulate,
-    isError: isErrorAddRecord,
     isSuccess: canAddRecord,
     failureReason: addRecordFailureReason,
   } = useSimulateContract({
@@ -79,12 +77,10 @@ export default function Home() {
     value: parseEther(bounty),
     chainId: localhost.id,
   });
-  console.log(parseEther(bounty));
-  // if (isErrorAddRecord) {
-  //   const contractError = addRecordFailureReason as any;
-  //   const failureReason = contractError.cause?.reason;
-  //   setFailureReason(failureReason);
-  // }
+
+  const failureReason = addRecordFailureReason?.cause as { reason?: string };
+
+  console.log(failureReason?.reason);
 
   const {
     data: _txHash,
@@ -118,8 +114,6 @@ export default function Home() {
     }
   }, [addRecordStatus]);
 
-  console.log({ failureReason });
-  console.log(txSuccess);
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
       <NavBar />
@@ -157,7 +151,19 @@ export default function Home() {
           />
 
           <Label className="mt-[2px]  text-gray-400">Bounty</Label>
+          <div className="text-sm text-red-300 pl-8">
+            <span
+              className={`${
+                failureReason?.reason === "Hash already exists."
+                  ? "visible"
+                  : "invisible"
+              }`}
+            >
+              Statement Already Exists
+            </span>{" "}
+          </div>
         </div>
+
         <div className="mt-5 flex flex-col">
           <Label className="text-gray-400">Hash (SHA256)</Label>
           <div className="flex gap-4">
@@ -168,7 +174,11 @@ export default function Home() {
             </div>
             <Button
               onClick={handleSignMessage}
-              disabled={signingStatus === "pending" || isSigned}
+              disabled={
+                signingStatus === "pending" ||
+                isSigned ||
+                failureReason?.reason === "Hash already exists."
+              }
               className="h-11 w-36  self-center text-lg"
             >
               {signingStatus === "pending" ? (
