@@ -41,7 +41,7 @@ import Link from "next/link";
 const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 type Record = {
-  id: number;
+  id: bigint;
   author: Address;
   hash: string;
   bounty: bigint;
@@ -66,8 +66,21 @@ export default function View() {
       hash: record.msgHashSha256,
       bounty: BigInt(record.bounty), // Convert string to bigint
       message: record.message,
-      id: record.id,
+      id: BigInt(record.id),
     })) ?? [];
+
+  const filteredRecords = records.filter((record) => {
+    // Check if the bounty filter is active and if the record passes the bounty condition
+    const bountyCondition =
+      !filterBounty || (filterBounty && record.bounty > 0);
+
+    // Check if the revealed filter is active and if the record passes the revealed condition
+    const revealedCondition =
+      !filterRevealed || (filterRevealed && record.message !== "");
+
+    // Keep the record only if it meets both conditions
+    return bountyCondition && revealedCondition;
+  });
 
   return (
     <main className="min-h-screen p-6 mx-auto max-w-5xl">
@@ -104,7 +117,7 @@ export default function View() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {records.map((record, index) => (
+            {filteredRecords.map((record, index) => (
               <TableRow key={index}>
                 {/*Author*/}
                 <TableCell className="font-medium">
