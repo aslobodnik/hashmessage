@@ -34,11 +34,11 @@ import {
 import { usePonder } from "@/hooks/usePonder";
 import { formatEther } from "viem";
 import { useSimulateContract, useWriteContract } from "wagmi";
-import { localhost, baseSepolia } from "wagmi/chains";
+import { localhost, base } from "wagmi/chains";
 import { testifiAbi } from "@/lib/abi";
 import Link from "next/link";
 
-const CONTRACT_ADDRESS = "0xf604051a9dB102b4F8FB2e8FEb12594d87afE3cC";
+const CONTRACT_ADDRESS = "0xA63cf205dF9D8E84c5611fe0A244211f9c00bf2d";
 
 type Record = {
   id: bigint;
@@ -165,7 +165,7 @@ function RevealPrediction({ record }: { record: Record }) {
     address: CONTRACT_ADDRESS,
     functionName: "revealAndClaimBounty",
     args: [message, record.id],
-    chainId: baseSepolia.id,
+    chainId: base.id,
   });
 
   const {
@@ -193,7 +193,7 @@ function RevealPrediction({ record }: { record: Record }) {
       address: CONTRACT_ADDRESS,
       functionName: "revealAndClaimBounty",
       args: [message, record.id],
-      chainId: baseSepolia.id,
+      chainId: base.id,
     });
   }
 

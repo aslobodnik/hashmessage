@@ -12,10 +12,10 @@ import { useState, useEffect, use } from "react";
 import { sha256, toHex, Hex, parseEther } from "viem";
 import { useSignMessage, useSimulateContract, useWriteContract } from "wagmi";
 
-import { localhost, baseSepolia } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { testifiAbi } from "@/lib/abi";
 
-const CONTRACT_ADDRESS = "0xf604051a9dB102b4F8FB2e8FEb12594d87afE3cC";
+const CONTRACT_ADDRESS = "0xA63cf205dF9D8E84c5611fe0A244211f9c00bf2d";
 
 export default function Home() {
   const [message, setMessage] = useState(""); // captures value of the secret message
@@ -30,7 +30,6 @@ export default function Home() {
 
   const [signedMsg, setSignedMsg] = useState("");
   const [hash, setHash] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
 
   const BountyCheckChange = (value: boolean) => {
     setBountyCheck(value);
@@ -75,7 +74,7 @@ export default function Home() {
     functionName: "addRecord",
     args: [hash, signedMsg as Hex],
     value: parseEther(bounty),
-    chainId: baseSepolia.id,
+    chainId: base.id,
   });
 
   const failureReason = addRecordFailureReason?.cause as { reason?: string };
@@ -97,7 +96,7 @@ export default function Home() {
       functionName: "addRecord",
       args: [hash, signedMsg as Hex],
       value: parseEther(bounty),
-      chainId: baseSepolia.id,
+      chainId: base.id,
     });
   }
 
