@@ -278,7 +278,7 @@ function DisplaySuccessMessage({
 }) {
   function renderTxSuccessMessage() {
     if (txSuccess) {
-      const url = `https://etherscan.io/tx/${txHash}`;
+      const url = `https://basescan.org/tx/${txHash}`;
       return (
         <p>
           {txHash ? (
