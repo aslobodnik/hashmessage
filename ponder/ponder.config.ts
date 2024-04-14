@@ -13,6 +13,7 @@ export default createConfig({
     base: {
       chainId: base.id,
       transport: http(process.env.PONDER_RPC_BASE_URL),
+      maxRequestsPerSecond: 5,
     },
   },
   contracts: {
