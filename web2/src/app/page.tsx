@@ -137,7 +137,12 @@ export default function Home() {
                 className=" bg-green-50 mt-1 placeholder:text-gray-400"
                 placeholder="0.1"
                 value={bounty}
-                onChange={(event) => setBounty(event.target.value)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  // Remove any non-numeric characters except decimal point
+                  const sanitizedValue = value.replace(/[^0-9.]/g, "");
+                  setBounty(sanitizedValue);
+                }}
               ></Input>
             </div>
           )}
