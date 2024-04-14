@@ -2,6 +2,7 @@ import { createConfig } from "@ponder/core";
 import { http } from "viem";
 
 import { ExampleContractAbi } from "./abis/ExampleContractAbi";
+import { base } from "viem/chains";
 
 export default createConfig({
   networks: {
@@ -9,9 +10,9 @@ export default createConfig({
     //   chainId: 1337,
     //   transport: http(process.env.PONDER_RPC_URL),
     // },
-    baseSepolia: {
-      chainId: 84532,
-      transport: http(process.env.PONDER_RPC_SEPOLIA_URL),
+    base: {
+      chainId: base.id,
+      transport: http(process.env.PONDER_RPC_BASE_URL),
     },
   },
   contracts: {
@@ -22,10 +23,10 @@ export default createConfig({
     //   startBlock: 3,
     // },
     ExampleContract: {
-      network: "baseSepolia",
+      network: "base",
       abi: ExampleContractAbi,
-      address: "0xf604051a9dB102b4F8FB2e8FEb12594d87afE3cC",
-      startBlock: 6957850,
+      address: "0xA63cf205dF9D8E84c5611fe0A244211f9c00bf2d",
+      startBlock: 11451188,
     },
   },
 });
