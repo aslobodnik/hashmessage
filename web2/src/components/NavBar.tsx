@@ -14,7 +14,7 @@ export function NavBar() {
         <div className="text-4xl text-gray-600 font-bold">Testifi</div>
         <Link
           href="/how"
-          className=" hover:text-green-500 active:text-green-600"
+          className=" hidden sm:block hover:text-green-500 active:text-green-600"
         >
           <div className=" text-gray-400">How It Works</div>
         </Link>
