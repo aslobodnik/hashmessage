@@ -117,22 +117,34 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Write a Statement</title>
+        <title>Testifi</title>
+        <meta
+          name="description"
+          content="I said, you said it, and know we know it"
+        />
+        <meta property="og:url" content="https://www.testifi.xyz" />
+        <meta property="og:type" content="website" />
         <meta property="og:title" content="Testifi" />
         <meta
           property="og:description"
-          content="Sha256 any message and store onchain forever"
+          content="I said, you said it, and know we know it"
         />
         <meta
           property="og:image"
-          content="https://imagedelivery.net/UJ5oN2ajUBrk2SVxlns2Aw/3d80d1fb-f50f-4835-9336-e46d7ae1e800/public"
+          content="https://opengraph.b-cdn.net/production/documents/dab56d3d-9fcc-489b-9f70-7cfed4a78392.png?token=GwC533XJpp4NCdg3mHejStNvxw6hiZF2NLwT-2S8CZ0&height=523&width=1001&expires=33249278802"
         />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Never Be This Person" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.testifi.xyz" />
-        <meta property="og:site_name" content="Testifi" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="twitter:domain" content="testifi.xyz" />
+        <meta property="twitter:url" content="https://www.testifi.xyz" />
+        <meta name="twitter:title" content="Testifi" />
+        <meta
+          name="twitter:description"
+          content="I said, you said it, and know we know it"
+        />
+        <meta
+          name="twitter:image"
+          content="https://opengraph.b-cdn.net/production/documents/dab56d3d-9fcc-489b-9f70-7cfed4a78392.png?token=GwC533XJpp4NCdg3mHejStNvxw6hiZF2NLwT-2S8CZ0&height=523&width=1001&expires=33249278802"
+        />
       </Head>
       <main className="min-h-screen p-6 mx-auto max-w-5xl">
         <NavBar />
