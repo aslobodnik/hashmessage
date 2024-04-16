@@ -75,7 +75,7 @@ export default function Home() {
     functionName: "addRecord",
     args: [hash, signedMsg as Hex],
     value: parseEther(bounty),
-    chainId: base.id,
+    chainId: 8453,
   });
 
   const failureReason = addRecordFailureReason?.cause as { reason?: string };
@@ -97,7 +97,7 @@ export default function Home() {
       functionName: "addRecord",
       args: [hash, signedMsg as Hex],
       value: parseEther(bounty),
-      chainId: base.id,
+      chainId: 8453,
     });
   }
 

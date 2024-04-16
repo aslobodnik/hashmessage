@@ -19,6 +19,11 @@ createWeb3Modal({
   wagmiConfig: config,
   projectId,
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
+  themeVariables: {
+    "--w3m-color-mix": "#00BB7F",
+    "--w3m-color-mix-strength": 40,
+    "--w3m-accent": "#00BB7F",
+  },
 });
 
 export function Web3Modal({

@@ -22,10 +22,10 @@ export const config = defaultWagmiConfig({
   metadata, // required
   ssr: true,
 
-  transports: {
-    [base.id]: http(),
-  },
-  storage: createStorage({
-    storage: cookieStorage,
-  }),
+  // transports: {
+  //   [base.id]: http(),
+  // },
+  // storage: createStorage({
+  //   storage: cookieStorage,
+  // }),
 });
