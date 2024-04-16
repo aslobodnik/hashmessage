@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { NavBar } from "@/components/NavBar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import Head from "next/head";
 
 import Link from "next/link";
 import { useState, useEffect, use } from "react";
@@ -114,108 +115,128 @@ export default function Home() {
   }, [addRecordStatus]);
 
   return (
-    <main className="min-h-screen p-6 mx-auto max-w-5xl">
-      <NavBar />
-      <div className="  max-w-2xl mt-10 mx-auto">
-        <h1 className="text-3xl  mb-10  text-gray-600 text-center font-bold">
-          Write a Statement
-        </h1>
-        <div className="flex gap-4">
-          <div className="grow   max-w-lg">
-            <Label className=" text-gray-400">Statement</Label>
-            <Input
-              className=" bg-green-50 mt-1  placeholder:text-gray-400"
-              placeholder="OG Facaster floor is 10ETH"
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-            ></Input>
-          </div>
-          {bountyCheck && (
-            <div>
-              <Label className=" text-gray-400">Bounty</Label>
+    <>
+      <Head>
+        <title>Write a Statement</title>
+        <meta property="og:title" content="Testifi" />
+        <meta
+          property="og:description"
+          content="Sha256 any message and store onchain forever"
+        />
+        <meta
+          property="og:image"
+          content="https://imagedelivery.net/UJ5oN2ajUBrk2SVxlns2Aw/3d80d1fb-f50f-4835-9336-e46d7ae1e800/public"
+        />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Never Be This Person" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://www.testifi.xyz" />
+        <meta property="og:site_name" content="Testifi" />
+      </Head>
+      <main className="min-h-screen p-6 mx-auto max-w-5xl">
+        <NavBar />
+        <div className="  max-w-2xl mt-10 mx-auto">
+          <h1 className="text-3xl  mb-10  text-gray-600 text-center font-bold">
+            Write a Statement
+          </h1>
+          <div className="flex gap-4">
+            <div className="grow   max-w-lg">
+              <Label className=" text-gray-400">Statement</Label>
               <Input
-                className=" bg-green-50 mt-1 placeholder:text-gray-400"
-                placeholder="0.1"
-                value={bounty}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  // Remove any non-numeric characters except decimal point
-                  const sanitizedValue = value.replace(/[^0-9.]/g, "");
-                  setBounty(sanitizedValue);
-                }}
+                className=" bg-green-50 mt-1  placeholder:text-gray-400"
+                placeholder="OG Facaster floor is 10ETH"
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
               ></Input>
             </div>
-          )}
-        </div>
-        <div className="mt-2 ml-2 flex gap-2">
-          <Checkbox
-            className=""
-            checked={bountyCheck}
-            onCheckedChange={BountyCheckChange}
-          />
-
-          <Label className="mt-[2px]  text-gray-400">Bounty</Label>
-          <div className="text-sm text-red-300 pl-8">
-            <span
-              className={`${
-                failureReason?.reason === "Hash already exists."
-                  ? "visible"
-                  : "invisible"
-              }`}
-            >
-              Statement Already Exists
-            </span>{" "}
+            {bountyCheck && (
+              <div>
+                <Label className=" text-gray-400">Bounty</Label>
+                <Input
+                  className=" bg-green-50 mt-1 placeholder:text-gray-400"
+                  placeholder="0.1"
+                  value={bounty}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    // Remove any non-numeric characters except decimal point
+                    const sanitizedValue = value.replace(/[^0-9.]/g, "");
+                    setBounty(sanitizedValue);
+                  }}
+                ></Input>
+              </div>
+            )}
           </div>
-        </div>
+          <div className="mt-2 ml-2 flex gap-2">
+            <Checkbox
+              className=""
+              checked={bountyCheck}
+              onCheckedChange={BountyCheckChange}
+            />
 
-        <div className="mt-5 flex flex-col">
-          <Label className="text-gray-400">Hash (SHA256)</Label>
-          <div className="flex gap-4">
-            <div className=" w-[324px] h-16 p-2 rounded mt-1 font-mono text-gray-600 bg-green-100">
-              {chunkHash(hash, 32).map((chunk, index) => (
-                <div key={index}>{chunk}</div>
-              ))}
+            <Label className="mt-[2px]  text-gray-400">Bounty</Label>
+            <div className="text-sm text-red-300 pl-8">
+              <span
+                className={`${
+                  failureReason?.reason === "Hash already exists."
+                    ? "visible"
+                    : "invisible"
+                }`}
+              >
+                Statement Already Exists
+              </span>{" "}
             </div>
-            <Button
-              onClick={handleSignMessage}
-              disabled={
-                signingStatus === "pending" ||
-                isSigned ||
-                failureReason?.reason === "Hash already exists."
-              }
-              className="h-11 w-36  self-center text-lg"
-            >
-              {signingStatus === "pending" ? (
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-              ) : isSigned ? (
-                "Signed"
-              ) : (
-                "Sign"
-              )}
-            </Button>{" "}
           </div>
+
+          <div className="mt-5 flex flex-col">
+            <Label className="text-gray-400">Hash (SHA256)</Label>
+            <div className="flex gap-4">
+              <div className=" w-[324px] h-16 p-2 rounded mt-1 font-mono text-gray-600 bg-green-100">
+                {chunkHash(hash, 32).map((chunk, index) => (
+                  <div key={index}>{chunk}</div>
+                ))}
+              </div>
+              <Button
+                onClick={handleSignMessage}
+                disabled={
+                  signingStatus === "pending" ||
+                  isSigned ||
+                  failureReason?.reason === "Hash already exists."
+                }
+                className="h-11 w-36  self-center text-lg"
+              >
+                {signingStatus === "pending" ? (
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                ) : isSigned ? (
+                  "Signed"
+                ) : (
+                  "Sign"
+                )}
+              </Button>{" "}
+            </div>
+          </div>
+
+          <Button
+            disabled={!canAddRecord || txSuccess}
+            className="h-11 w-full max-w-lg mt-4 self-center text-lg"
+            onClick={handleAddRecord}
+          >
+            {addRecordStatus === "pending" ? (
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Create"
+            )}
+          </Button>
+
+          <DisplaySuccessMessage
+            message={lastMessage}
+            isSigned={isSigned}
+            txSuccess={txSuccess}
+            txHash={txHash}
+          />
         </div>
-
-        <Button
-          disabled={!canAddRecord || txSuccess}
-          className="h-11 w-full max-w-lg mt-4 self-center text-lg"
-          onClick={handleAddRecord}
-        >
-          {addRecordStatus === "pending" ? (
-            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            "Create"
-          )}
-        </Button>
-
-        <DisplaySuccessMessage
-          message={lastMessage}
-          isSigned={isSigned}
-          txSuccess={txSuccess}
-          txHash={txHash}
-        />
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
 
